@@ -1,0 +1,16 @@
+#!/bin/bash
+
+testExe() {
+	printTestMsgHeader "$1"
+	eval "$1"
+	echo
+}
+
+printTestMsgHeader() {
+	printf "\033[1;34mTest:\033[0m %s\n" "$1"
+}
+
+# Test cases:
+
+testExe 'bash ./recycle'
+testExe 'bash ./recycle non-existing-file'
