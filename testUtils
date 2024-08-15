@@ -6,6 +6,31 @@ export recycleBin="$HOME/recyclebin"
 export tmpDir='tmpDir'
 export tmpFile='tmpFile'
 
+printTestMsgHeader() {
+	printf "\033[1;34mTest %s:\033[0m %s\n" "$1" "$2"
+}
+
+# 1st arg: test description
+# 2nd arg: command to execute
+# 3rd arg (optional): expected result; without this, won't check output
+testExe() {
+	printTestMsgHeader "$1" "$2"
+	result="$(eval "$2")"
+
+	if [ "$#" -ge 3 ]; then
+		if [ "$result" = "$3" ]; then
+			echo -e "\033[1;32mOutput passed\033[0m"
+		else
+			echo -e "\033[1;31mOuput unmatched\033[0m"
+			echo "Expected: $3"
+			echo "Got: $result"
+			exit 1
+		fi
+	else
+		echo -e "Output: $result"
+	fi
+}
+
 clearRecycleBin() {
 	rm "$recycleBin"/* 2>/dev/null
 }
@@ -22,3 +47,23 @@ clearAll() {
 getInodeNumber() {
 	echo "$(ls -i "$1" | cut -d' ' -f1)"
 }
+
+verifyFileExist() {
+	if [ ! -e "$1" ]; then
+		echo -e "\033[1;31mTest failed\033[0m"
+		echo "File '${1}' does not exist"
+		exit 2
+	fi
+}
+
+# 1st arg: file name
+# 2nd arg: absolute path
+checkRestoreInfo() {
+	record="$1$restoreInfoSep$2"
+	if ! grep -Fqe "$record" "$restoreFile"; then
+		echo -en "\033[1;31mTest failed\033[0m: "
+		echo "Cannot find record '$record' in '$restoreFile'"
+		exit 3
+	fi
+}
+
