@@ -65,7 +65,16 @@ rmdir "$tmpDir"
 clearAll
 
 testName='exit non-zero if passing invalid option'
-testExe "$testName" "bash ./recycle -x" './recycle: invalid option: -- x'
+fileName="testFile"
+touch "$fileName"
+inodeNumber="$(getInodeNumber "$fileName")"
+absPath="$(realpath "$fileName")"
+recycleFileName="${fileName}_${inodeNumber}"
+testExe "$testName" "bash ./recycle -x \"$fileName\"" './recycle: invalid option: -- x'
+verifyFileExist "$fileName"
+verifyFileNotExist "$recycleBin/$recycleFileName"
+checkRestoreInfoNotExist "$recycleFileName" "$absPath"
+clearAll
 
 testName='confirm recycling when in interactive mode'
 fileName1="testFile1"
