@@ -63,6 +63,10 @@ getRecord() {
 	grep -F -e "$1" "$restoreFile" 2>/dev/null
 }
 
+getRecordsFromAbsPath() {
+	grep -Ee ":$(escapeForRegex "$1")" "$restoreFile"
+}
+
 removeRecord() {
 	local record
 	record="$(getRecord "$1")"
@@ -131,4 +135,13 @@ parseOpts "$@"
 shift $((OPTIND - 1))
 validateArgs "$@"
 
-restoreFile "$1"
+if $recursive; then
+	IFS=$'\n'
+	absPath="$(recreateAbsPath "$1")"
+	for record in $(getRecordsFromAbsPath "$absPath"); do
+		restoreFile "$(echo "$record" | cut -d':' -f1)"
+	done
+	unset IFS
+else
+	restoreFile "$1"
+fi

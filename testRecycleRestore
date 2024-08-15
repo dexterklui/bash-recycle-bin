@@ -81,3 +81,19 @@ checkRestoreInfoNotExist "${fileName1}_$inodeNumber1" "$absPath1"
 checkRestoreInfo "${fileName2}_$inodeNumber2" "$absPath2"
 rm "$fileName1"
 clearAll
+
+testName='Recursive recycling then recursive restoring'
+mkdir -p tmpDir/nestDir tmpDir/restoreDir
+touch tmpDir/f{1..3} tmpDir/nestDir/f{1..3} tmpDir/restoreDir/f{1..3}
+inodeNumber="$(getInodeNumber tmpDir/restoreDir/f1)"
+recycleFileName="f1_$inodeNumber"
+realPath="$(realpath tmpDir/restoreDir/f1)"
+cmd="bash ./recycle -r tmpDir; bash ./restore -r tmpDir/restoreDir"
+testExe "$testName" "$cmd" ''
+verifyFileExist tmpDir/restoreDir/f1
+verifyFileExist tmpDir/restoreDir/f2
+verifyFileExist tmpDir/restoreDir/f3
+verifyFileNotExist tmpDir/nestDir
+checkRestoreInfoNotExist "$recycleFileName" "$realPath"
+rm -rf tmpDir
+clearAll
