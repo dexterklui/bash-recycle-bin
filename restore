@@ -2,7 +2,6 @@
 
 restoreFile="$HOME/.restore.info"
 recycleBin="$HOME/recyclebin"
-tmpRestoreFile='/tmp/recycleBinRestoreInfo'
 
 recursive=false
 
@@ -69,12 +68,7 @@ getRecordsFromAbsPath() {
 
 # remove record for a file with the recycled file name ({originalFileName}_{inodeNumber})
 removeRecord() {
-	local record
-	record="$(getRecord "$1")"
-	# TODO: use sed to remove the record in place
-	grep -Eve "^$(escapeForRegex "$record")$" "$restoreFile" >"$tmpRestoreFile"
-	cp "$tmpRestoreFile" "$restoreFile"
-	rm "$tmpRestoreFile"
+	sed -i -e "/^$(escapeForRegex "$1"):/d" "$restoreFile"
 }
 
 # if there is no possible valid absolute path, then result is not well defined
