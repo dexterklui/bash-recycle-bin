@@ -4,10 +4,22 @@ tmpDir='tmpDir'
 
 # 1st arg: test description
 # 2nd arg: command to execute
+# 3rd arg (optional): expected result
 testExe() {
 	printTestMsgHeader "$1" "$2"
-	eval "$2"
-	echo
+	result="$(eval "$2")"
+
+	if [ "$#" -ge 3 ]; then
+		if [ "$result" = "$3" ]; then
+			echo -e "\033[1;32mTest passed\033[0m"
+		else
+			echo -e "\033[1;31mTest failed\033[0m"
+			echo "Expected: $3"
+			echo "Got: $result"
+		fi
+	else
+		echo -e "Result: $result"
+	fi
 }
 
 printTestMsgHeader() {
@@ -16,11 +28,15 @@ printTestMsgHeader() {
 
 # Test cases:
 
-testExe 'no argument' 'bash ./recycle'
-testExe 'provided single non-existing file' 'bash ./recycle non-existing-file'
+testExe 'no argument' 'bash ./recycle' \
+	'./recycle: no filename is provided'
+testExe 'provided single non-existing file' 'bash ./recycle non-existing-file' \
+	"./recycle: file 'non-existing-file' does not exist"
 
 mkdir -p "$tmpDir"
-testExe 'provided single directory' "bash ./recycle \"$tmpDir\""
+testExe 'provided single directory' "bash ./recycle \"$tmpDir\"" \
+	"./recycle: '$tmpDir' is a directory, but expect a file"
 rmdir "$tmpDir"
 
-testExe 'recycle the recycle script itself' 'bash ./recycle ./recycle'
+testExe 'recycle the recycle script itself' 'bash ./recycle ./recycle' \
+	"./recycle: cannot recycle itself"
