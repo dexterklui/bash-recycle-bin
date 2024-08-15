@@ -18,3 +18,7 @@ clearAll() {
 	clearRecycleBin
 	clearRestoreInfo
 }
+
+getInodeNumber() {
+	echo "$(ls -i "$1" | cut -d' ' -f1)"
+}

@@ -70,7 +70,7 @@ testExe 'recycle the recycle script itself' 'bash ./recycle ./recycle' \
 	"./recycle: cannot recycle itself"
 
 touch "$tmpFile"
-inodeNumber="$(ls -i "$tmpFile" | cut -d' ' -f1)"
+inodeNumber="$(getInodeNumber "$tmpFile")"
 testExe 'recycle single file does put into recyle bin' "bash ./recycle \"$tmpFile\"" ''
 verifyFileExist "$recycleBin/${tmpFile}_$inodeNumber"
 clearAll
@@ -78,7 +78,7 @@ clearAll
 mkdir -p "$tmpDir"
 targetFile="$tmpDir/$tmpFile"
 touch "$targetFile"
-inodeNumber="$(ls -i "$targetFile" | cut -d' ' -f1)"
+inodeNumber="$(getInodeNumber "$targetFile")"
 testExe 'recycle single file in a directory does put into recyle bin' "bash ./recycle \"$targetFile\"" ''
 verifyFileExist "$recycleBin/${tmpFile}_$inodeNumber"
 rmdir "$tmpDir"
@@ -86,7 +86,7 @@ clearAll
 
 touch "$tmpFile"
 absPath="$(realpath "$tmpFile")"
-inodeNumber="$(ls -i "$tmpFile" | cut -d' ' -f1)"
+inodeNumber="$(getInodeNumber "$tmpFile")"
 testExe 'recycling file updates .restore.info' "bash ./recycle \"$tmpFile\"" ''
 checkRestoreInfo "${tmpFile}_$inodeNumber" "$absPath"
 clearAll
@@ -98,8 +98,8 @@ mkdir -p "$tmpDir"
 touch "$file1" "$file2"
 path1="$(realpath "$file1")"
 path2="$(realpath "$file2")"
-inode1="$(ls -i "$file1" | cut -d' ' -f1)"
-inode2="$(ls -i "$file2" | cut -d' ' -f1)"
+inode1="$(getInodeNumber "$file1")"
+inode2="$(getInodeNumber "$file2")"
 testExe "$testName" "bash ./recycle \"$file1\"; bash ./recycle \"$file2\"" ''
 checkRestoreInfo "${tmpFile}_$inode1" "$path1"
 checkRestoreInfo "${tmpFile}_$inode2" "$path2"
