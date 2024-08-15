@@ -39,12 +39,14 @@ hasRecord() {
 }
 
 getRecord() {
+	# XXX: use regex, but only after escaping regex meta characters
 	grep -F -e "$1" "$restoreFile" 2>/dev/null
 }
 
 removeRecord() {
 	local record
 	record="$(getRecord "$1")"
+	# XXX: use regex, but only after escaping regex meta characters
 	grep -Fv -e "$record" "$restoreFile" >"$tmpRestoreFile"
 	cp "$tmpRestoreFile" "$restoreFile"
 	rm "$tmpRestoreFile"

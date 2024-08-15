@@ -72,6 +72,7 @@ getRecycleFileName() {
 writeRecord() {
 	record="$1:$2"
 
+	# XXX: use regex, but only after escaping regex meta characters
 	if grep -Fqe "$record" "$restoreFile"; then
 		echo "$0: record '$record' already exists in '$restoreFile', you can't recycle same filename with same inode number"
 		exit 10
