@@ -2,6 +2,7 @@
 
 restoreFile="$HOME/.restore.info"
 recycleBin="$HOME/recyclebin"
+tmpRestoreFile='/tmp/recycleBinRestoreInfo'
 
 validateArgs() {
 	if [ "$#" -le 0 ]; then
@@ -21,7 +22,7 @@ hasRecord() {
 	record="$(getRecord "$1")"
 	numberOfRecords="$(echo "$record" | wc -l)"
 
-	if [ "$numberOfRecords" -eq 0 ]; then
+	if [ -z "$record" ]; then
 		echo "$0: Can't find restore info for file '$1'"
 		exit 3
 	fi
@@ -41,6 +42,14 @@ getRecord() {
 	grep -F -e "$1" "$restoreFile" 2>/dev/null
 }
 
+removeRecord() {
+	local record
+	record="$(getRecord "$1")"
+	grep -Fv -e "$record" "$restoreFile" >"$tmpRestoreFile"
+	cp "$tmpRestoreFile" "$restoreFile"
+	rm "$tmpRestoreFile"
+}
+
 askForOverwrite() {
 	read -p "Do you want to overwrite the existing file '$1'? (y/n): " answer
 	if echo -n "$answer" | grep -qive '^y'; then
@@ -58,6 +67,7 @@ restoreFile() {
 	absPath="$(getRecord "$1" | cut -d':' -f2)"
 	if [ ! -e "$absPath" ] || askForOverwrite "$absPath"; then
 		mv "$recycleBin/$1" "$absPath"
+		removeRecord "$1"
 	fi
 }
 

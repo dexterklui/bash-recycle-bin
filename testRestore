@@ -29,11 +29,16 @@ inodeNumber="$(getInodeNumber "$fileName")"
 absPath="$(realpath "$fileName")"
 recycleFileName="${fileName}_${inodeNumber}"
 echo "$recycleFileName:$absPath" >"$restoreFile"
+echo "random-file_72189214:/tmp/non-existing-dir/random-file" >>"$restoreFile" # add a random record
 mv "$fileName" "$recycleBin/$recycleFileName"
 cmd="bash ./restore $recycleFileName"
 testExe "$testName" "$cmd" ''
 verifyFileExist "$fileName"
 verifyFileNotExist "$recycleBin/$recycleFileName"
+checkRestoreInfoNotExist "$recycleFileName" "$absPath"
+checkRestoreInfo "random-file_72189214" "/tmp/non-existing-dir/random-file" # check the random record is still there
 rm "$fileName"
+cat /dev/null >"$restoreFile"
+clearAll
 
 clearAll
