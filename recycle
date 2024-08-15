@@ -7,4 +7,12 @@ validateArgs() {
 	fi
 }
 
+validateFile() {
+	if [ ! -e "$1" ]; then
+		echo "$0: file '$1' does not exist"
+		exit 2
+	fi
+}
+
 validateArgs "$@"
+validateFile "$1"
