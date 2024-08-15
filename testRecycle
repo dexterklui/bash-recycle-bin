@@ -54,7 +54,6 @@ printTestMsgHeader() {
 # Test cases #
 ##############
 
-rm -r "$recycleBin"
 clearAll
 
 testExe 'no argument' 'bash ./recycle' \

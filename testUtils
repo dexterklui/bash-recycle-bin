@@ -7,7 +7,7 @@ export tmpDir='tmpDir'
 export tmpFile='tmpFile'
 
 clearRecycleBin() {
-	rm "$recycleBin"/*
+	rm "$recycleBin"/* 2>/dev/null
 }
 
 clearRestoreInfo() {
