@@ -71,6 +71,7 @@ removeRecord() {
 	local record
 	record="$(getRecord "$1")"
 	# XXX: use regex, but only after escaping regex meta characters
+	# TODO: use sed to remove the record in place
 	grep -Fv -e "$record" "$restoreFile" >"$tmpRestoreFile"
 	cp "$tmpRestoreFile" "$restoreFile"
 	rm "$tmpRestoreFile"
