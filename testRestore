@@ -22,4 +22,18 @@ cmd="bash ./restore non-existing-file_123"
 expectedOutput="./restore: file 'non-existing-file_123' does not exist in '$recycleBin'"
 testExe "$testName" "$cmd" "$expectedOutput"
 
+testName="Restore a single file"
+fileName="testFile"
+touch "$fileName"
+inodeNumber="$(getInodeNumber "$fileName")"
+absPath="$(realpath "$fileName")"
+recycleFileName="${fileName}_${inodeNumber}"
+echo "$recycleFileName:$absPath" >"$restoreFile"
+mv "$fileName" "$recycleBin/$recycleFileName"
+cmd="bash ./restore $recycleFileName"
+testExe "$testName" "$cmd" ''
+verifyFileExist "$fileName"
+verifyFileNotExist "$recycleBin/$recycleFileName"
+rm "$fileName"
+
 clearAll

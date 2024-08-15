@@ -1,5 +1,6 @@
 #!/bin/bash
 
+restoreFile="$HOME/.restore.info"
 recycleBin="$HOME/recyclebin"
 
 validateArgs() {
@@ -16,5 +17,53 @@ validateFile() {
 	fi
 }
 
+hasRecord() {
+	record="$(getRecord "$1")"
+	numberOfRecords="$(echo "$record" | wc -l)"
+
+	if [ "$numberOfRecords" -eq 0 ]; then
+		echo "$0: Can't find restore info for file '$1'"
+		exit 3
+	fi
+
+	if [ "$numberOfRecords" -ge 2 ]; then
+		echo "$0: Multiple restore info found for file '$1'"
+		exit 5
+	fi
+
+	if [ "$(echo -n "$record" | cut -d':' -f1 2>/dev/null)" != "$1" ]; then
+		echo "$0: Corrupt info for file '$1'"
+		exit 3
+	fi
+}
+
+getRecord() {
+	grep -F -e "$1" "$restoreFile" 2>/dev/null
+}
+
+askForOverwrite() {
+	read -p "Do you want to overwrite the existing file '$1'? (y/n): " answer
+	if echo -n "$answer" | grep -qive '^y'; then
+		exit 1
+	fi
+}
+
+restoreFile() {
+	validateFile "$1"
+
+	if ! hasRecord "$1"; then
+		exit $?
+	fi
+
+	absPath="$(getRecord "$1" | cut -d':' -f2)"
+	if [ ! -e "$absPath" ] || askForOverwrite "$absPath"; then
+		mv "$recycleBin/$1" "$absPath"
+	fi
+}
+
+########
+# main #
+########
+
 validateArgs "$@"
-validateFile "$1"
+restoreFile "$1"

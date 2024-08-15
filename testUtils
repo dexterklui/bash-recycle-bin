@@ -50,6 +50,14 @@ verifyFileExist() {
 	fi
 }
 
+verifyFileNotExist() {
+	if [ -e "$1" ]; then
+		echo -e "\033[1;31mTest failed\033[0m"
+		echo "File '${1}' should not exist"
+		exit 2
+	fi
+}
+
 # 1st arg: file name
 # 2nd arg: absolute path
 checkRestoreInfo() {
