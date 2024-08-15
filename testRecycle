@@ -89,7 +89,7 @@ recycleFileName2="${fileName2}_${inodeNumber2}"
 echo "y" >"$tmpInput"
 echo "n" >>"$tmpInput"
 cmd="bash ./recycle -i \"$fileName1\" \"$fileName2\" <\"$tmpInput\""
-testExe "$testName" "$cmd"
+testExe "$testName" "$cmd" ''
 verifyFileExist "$recycleBin/$recycleFileName1"
 verifyFileExist "$fileName2"
 verifyFileNotExist "$fileName1"
