@@ -16,6 +16,7 @@ testExe() {
 			echo -e "\033[1;31mTest failed\033[0m"
 			echo "Expected: $3"
 			echo "Got: $result"
+			exit 1
 		fi
 	else
 		echo -e "Result: $result"
