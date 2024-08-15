@@ -89,3 +89,10 @@ checkRestoreInfo "$recycleFileName1" "$absPath1"
 checkRestoreInfoNotExist "$recycleFileName2" "$absPath2"
 rm "$fileName2"
 clearAll
+
+testName='display message in verbose mode'
+fileName="testFile"
+touch "$fileName"
+cmd="bash ./recycle -v \"$fileName\""
+testExe "$testName" "$cmd" "Recycled '$fileName'"
+clearAll

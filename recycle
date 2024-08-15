@@ -4,6 +4,7 @@ restoreFile="$HOME/.restore.info"
 recycleBin="$HOME/recyclebin"
 
 interactive=false
+verbose=false
 
 encounteredNonExistingFile=false
 encounteredDir=false
@@ -16,10 +17,13 @@ createRestoreFileIfNotExist() {
 }
 
 parseOpts() {
-	while getopts ":i" opt; do
+	while getopts ":iv" opt; do
 		case "$opt" in
 		i)
 			interactive=true
+			;;
+		v)
+			verbose=true
 			;;
 		\?)
 			echo "$0: invalid option: -- $OPTARG"
@@ -86,6 +90,12 @@ confirmRecycleIfInteractive() {
 	fi
 }
 
+displayMessageIfVerbose() {
+	if "$verbose"; then
+		echo "Recycled '$1'"
+	fi
+}
+
 recycleFile() {
 	if ! validateFile "$1"; then
 		return 1
@@ -99,6 +109,7 @@ recycleFile() {
 	recycleFileName="$(getRecycleFileName "$1")"
 
 	mv "$1" "$recycleBin/$recycleFileName"
+	displayMessageIfVerbose "$1"
 	writeRecord "$recycleFileName:$absPath"
 }
 
