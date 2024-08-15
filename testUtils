@@ -65,7 +65,7 @@ verifyFileNotExist() {
 # 2nd arg: absolute path
 checkRestoreInfo() {
 	record="$1$restoreInfoSep$2"
-	if ! grep -Fqe "$record" "$restoreFile"; then
+	if ! grep -Eqe "^$(escapeForRegex "$record")$" "$restoreFile"; then
 		echo -en "\033[1;31mTest failed\033[0m: "
 		echo "Cannot find record '$record' in '$restoreFile'"
 		exit 3
@@ -76,9 +76,13 @@ checkRestoreInfo() {
 # 2nd arg: absolute path
 checkRestoreInfoNotExist() {
 	record="$1$restoreInfoSep$2"
-	if grep -Fqe "$record" "$restoreFile"; then
+	if grep -Eqe "^$(escapeForRegex "$record")$" "$restoreFile"; then
 		echo -en "\033[1;31mTest failed\033[0m: "
 		echo "Record '$record' should not be in '$restoreFile'"
 		exit 4
 	fi
+}
+
+escapeForRegex() {
+	echo -n "$1" | sed -E 's/([][()^$+|.*\{}])/\\\1/g'
 }

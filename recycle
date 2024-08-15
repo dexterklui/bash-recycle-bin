@@ -136,7 +136,7 @@ recycleFile() {
 
 	mv "$1" "$recycleBin/$recycleFileName"
 	displayMessageIfVerbose "$1"
-	writeRecord "$recycleFileName:$absPath"
+	writeRecord "$recycleFileName" "$absPath"
 }
 
 calculateExitCode() {
