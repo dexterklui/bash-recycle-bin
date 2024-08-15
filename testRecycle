@@ -2,21 +2,25 @@
 
 tmpDir='tmpDir'
 
+# 1st arg: test description
+# 2nd arg: command to execute
 testExe() {
-	printTestMsgHeader "$1"
-	eval "$1"
+	printTestMsgHeader "$1" "$2"
+	eval "$2"
 	echo
 }
 
 printTestMsgHeader() {
-	printf "\033[1;34mTest:\033[0m %s\n" "$1"
+	printf "\033[1;34mTest %s:\033[0m %s\n" "$1" "$2"
 }
 
 # Test cases:
 
-testExe 'bash ./recycle'
-testExe 'bash ./recycle non-existing-file'
+testExe 'no argument' 'bash ./recycle'
+testExe 'provided single non-existing file' 'bash ./recycle non-existing-file'
 
 mkdir -p "$tmpDir"
-testExe "bash ./recycle $tmpDir"
+testExe 'provided single directory' "bash ./recycle $tmpDir"
 rmdir "$tmpDir"
+
+testExe 'recycle the recycle script itself' 'bash ./recycle ./recycle'
