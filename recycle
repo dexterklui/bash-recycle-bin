@@ -63,7 +63,14 @@ recycleFile() {
 	writeRecord "$recycleFileName:$absPath"
 }
 
+########
+# main #
+########
+
 validateArgs "$@"
 createRestoreFileIfNotExist
 mkdir -p "$recycleBin"
-recycleFile "$1"
+
+for file in "$@"; do
+	recycleFile "$file"
+done
