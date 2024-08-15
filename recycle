@@ -1,6 +1,13 @@
 #!/bin/bash
 
+restoreFile="$HOME/.restore.info"
 recycleBin="$HOME/recyclebin"
+
+createRestoreFileIfNotExist() {
+	if [ ! -e "$restoreFile" ]; then
+		touch "$restoreFile"
+	fi
+}
 
 validateArgs() {
 	if [ "$#" -le 0 ]; then
@@ -33,11 +40,30 @@ getRecycleFileName() {
 	unset inodeNumber
 }
 
+# 1st arg: recycle file name
+# 2nd arg: absolute path
+writeRecord() {
+	record="$1:$2"
+
+	if grep -Fqe "$record" "$restoreFile"; then
+		echo "$0: record '$record' already exists in '$restoreFile', you can't recycle same filename with same inode number"
+		exit 5
+	else
+		echo "$record" >>"$restoreFile"
+	fi
+}
+
 recycleFile() {
 	validateFile "$1"
-	mv "$1" "$recycleBin/$(getRecycleFileName "$1")"
+
+	absPath="$(realpath "$1")"
+	recycleFileName="$(getRecycleFileName "$1")"
+
+	mv "$1" "$recycleBin/$recycleFileName"
+	writeRecord "$recycleFileName:$absPath"
 }
 
 validateArgs "$@"
+createRestoreFileIfNotExist
 mkdir -p "$recycleBin"
 recycleFile "$1"
