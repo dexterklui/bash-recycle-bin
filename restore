@@ -66,6 +66,7 @@ restoreFile() {
 
 	absPath="$(getRecord "$1" | cut -d':' -f2)"
 	if [ ! -e "$absPath" ] || askForOverwrite "$absPath"; then
+		mkdir -p "$(dirname "$absPath")"
 		mv "$recycleBin/$1" "$absPath"
 		removeRecord "$1"
 	fi

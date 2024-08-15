@@ -75,3 +75,22 @@ verifyFileExist "$recycleBin/$recycleFileName"
 checkRestoreInfo "$recycleFileName" "$absPath"
 rm "$fileName"
 clearAll
+
+testName="Restoring to a non-existing directory"
+dirName="testDir"
+fileName="testFile"
+mkdir -p "$dirName"
+touch "$dirName/$fileName"
+inodeNumber="$(getInodeNumber "$dirName/$fileName")"
+absPath="$(realpath "$dirName/$fileName")"
+recycleFileName="${fileName}_${inodeNumber}"
+echo "$recycleFileName:$absPath" >"$restoreFile"
+mv "$dirName/$fileName" "$recycleBin/$recycleFileName"
+rmdir "$dirName"
+cmd="bash ./restore $recycleFileName"
+testExe "$testName" "$cmd" ''
+verifyFileExist "$dirName/$fileName"
+verifyFileNotExist "$recycleBin/$recycleFileName"
+checkRestoreInfoNotExist "$recycleFileName" "$absPath"
+rm -r "$dirName"
+clearAll
