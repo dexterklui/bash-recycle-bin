@@ -4,6 +4,22 @@ restoreFile="$HOME/.restore.info"
 recycleBin="$HOME/recyclebin"
 tmpRestoreFile='/tmp/recycleBinRestoreInfo'
 
+recursive=false
+
+parseOpts() {
+	while getopts ":r" opt; do
+		case "$opt" in
+		r)
+			recursive=true
+			;;
+		\?)
+			echo "$0: invalid option: -- $OPTARG"
+			exit 8
+			;;
+		esac
+	done
+}
+
 validateArgs() {
 	if [ "$#" -le 0 ]; then
 		echo "$0: no filename is provided"
@@ -78,5 +94,8 @@ restoreFile() {
 # main #
 ########
 
+parseOpts "$@"
+shift $((OPTIND - 1))
 validateArgs "$@"
+
 restoreFile "$1"

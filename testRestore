@@ -94,3 +94,18 @@ verifyFileNotExist "$recycleBin/$recycleFileName"
 checkRestoreInfoNotExist "$recycleFileName" "$absPath"
 rm -r "$dirName"
 clearAll
+
+testName='exit non-zero if passing invalid option'
+fileName="testFile"
+touch "$fileName"
+inodeNumber="$(getInodeNumber "$fileName")"
+absPath="$(realpath "$fileName")"
+recycleFileName="${fileName}_${inodeNumber}"
+echo "$recycleFileName:$absPath" >"$restoreFile"
+mv "$fileName" "$recycleBin/$recycleFileName"
+cmd="bash ./restore -x $recycleFileName"
+testExe "$testName" "$cmd" './restore: invalid option: -- x'
+verifyFileNotExist "$fileName"
+verifyFileExist "$recycleBin/$recycleFileName"
+checkRestoreInfo "$recycleFileName" "$absPath"
+clearAll
