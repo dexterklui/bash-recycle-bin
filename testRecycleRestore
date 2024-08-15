@@ -1,0 +1,25 @@
+#!/bin/bash
+
+##########
+# Set up #
+##########
+
+. ./testUtils
+. ./exportEnv
+clearAll
+
+##############
+# Test cases #
+##############
+
+testName="Recycle a single file then restore it"
+fileName1="testFile"
+touch "$fileName1"
+inodeNumber1="$(getInodeNumber "$fileName1")"
+absPath1="$(realpath "$fileName1")"
+cmd="bash ./recycle \"$fileName1\"; bash ./restore \"${fileName1}_$inodeNumber1\""
+testExe "$testName" "$cmd" ''
+verifyFileExist "$fileName1"
+verifyFileNotExist "$recycleBin/${fileName1}_$inodeNumber1"
+checkRestoreInfoNotExist "${fileName1}_$inodeNumber1" "$absPath1"
+rm "$fileName1"
