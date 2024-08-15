@@ -2,6 +2,7 @@
 
 restoreFile="$HOME/.restore.info"
 recycleBin="$HOME/recyclebin"
+separator=":"
 
 interactive=false
 verbose=false
@@ -31,7 +32,7 @@ parseOpts() {
 			;;
 		\?)
 			echo "$0: invalid option: -- $OPTARG"
-			exit 8
+			exit 16
 			;;
 		esac
 	done
@@ -40,7 +41,7 @@ parseOpts() {
 validateArgs() {
 	if [ "$#" -le 0 ]; then
 		echo "$0: no filename is provided"
-		exit 9
+		exit 17
 	fi
 }
 
@@ -49,6 +50,11 @@ validateFile() {
 		echo "$0: file '$1' does not exist"
 		encounteredNonExistingFile=true
 		return 1
+	fi
+
+	if realpath "$1" | grep -q "$(escapeForRegex "$separator")"; then
+		echo "$0: can't recycle file '$1' because its absolute path contains separator '$separator'"
+		return 8
 	fi
 
 	if [ -d "$1" ] && ! $recursive; then
@@ -78,11 +84,11 @@ escapeForRegex() {
 # 1st arg: recycle file name
 # 2nd arg: absolute path
 writeRecord() {
-	record="$1:$2"
+	record="$1$separator$2"
 
 	if grep -Eqe "^$(escapeForRegex "$record")$" "$restoreFile"; then
 		echo "$0: record '$record' already exists in '$restoreFile', you can't recycle same filename with same inode number"
-		exit 10
+		exit 18
 	else
 		echo "$record" >>"$restoreFile"
 	fi

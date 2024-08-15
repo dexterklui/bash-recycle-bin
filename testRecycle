@@ -137,3 +137,12 @@ checkRestoreInfo "$recycleFileName" "$realPath"
 verifyFileNotExist "$recycleBin/$dirRecycleFileName"
 checkRestoreInfoNotExist "$dirRecycleFileName" "$dirRealPath"
 clearAll
+
+testName='should not recycle file whose absolute path contains separator'
+touch 'f:'
+cmd="bash ./recycle 'f:'"
+expectedOutput="./recycle: can't recycle file 'f:' because its absolute path contains separator '$restoreInfoSep'"
+testExe "$testName" "$cmd" "$expectedOutput"
+verifyFileExist 'f:'
+rm 'f:'
+clearAll
