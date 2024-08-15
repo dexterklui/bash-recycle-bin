@@ -83,7 +83,7 @@ testExe 'recycle the recycle script itself' 'bash ./recycle ./recycle' \
 
 touch "$tmpFile"
 inodeNumber="$(ls -i "$tmpFile" | cut -d' ' -f1)"
-testExe 'recycle single file does put into recyle bin' "bash ./recycle \"$tmpFile\""
+testExe 'recycle single file does put into recyle bin' "bash ./recycle \"$tmpFile\"" ''
 verifyFileExist "$recycleBin/${tmpFile}_$inodeNumber"
 clearAll
 
@@ -91,7 +91,7 @@ mkdir -p "$tmpDir"
 targetFile="$tmpDir/$tmpFile"
 touch "$targetFile"
 inodeNumber="$(ls -i "$targetFile" | cut -d' ' -f1)"
-testExe 'recycle single file in a directory does put into recyle bin' "bash ./recycle \"$targetFile\""
+testExe 'recycle single file in a directory does put into recyle bin' "bash ./recycle \"$targetFile\"" ''
 verifyFileExist "$recycleBin/${tmpFile}_$inodeNumber"
 rmdir "$tmpDir"
 clearAll
