@@ -119,3 +119,21 @@ verifyFileExist "$recycleBin/$recycleFileName"
 verifyFileNotExist "$fileName"
 checkRestoreInfo "$recycleFileName" "$absPath"
 clearAll
+
+testName='Recursive recycling'
+mkdir -p tmpDir/nestDir1 tmpDir/nestDir2
+touch tmpDir/f{1..3} tmpDir/nestDir1/f{1..3} tmpDir/nestDir2/f{1..3}
+inodeNumber="$(getInodeNumber tmpDir/nestDir2/f1)"
+recycleFileName="f1_$inodeNumber"
+realPath="$(realpath tmpDir/nestDir2/f1)"
+dirInodeNumber="$(getInodeNumber tmpDir)"
+dirRecycleFileName="tmpDir_$dirInodeNumber"
+dirRealPath="$(realpath tmpDir)"
+cmd="bash ./recycle -r tmpDir"
+testExe "$testName" "$cmd" ''
+verifyFileNotExist tmpDir
+verifyFileExist "$recycleBin/$recycleFileName"
+checkRestoreInfo "$recycleFileName" "$realPath"
+verifyFileNotExist "$recycleBin/$dirRecycleFileName"
+checkRestoreInfoNotExist "$dirRecycleFileName" "$dirRealPath"
+cleanAll

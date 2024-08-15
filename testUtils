@@ -42,7 +42,7 @@ clearAll() {
 }
 
 getInodeNumber() {
-	echo "$(ls -i "$1" | cut -d' ' -f1)"
+	echo "$(ls -di "$1" | cut -d' ' -f1)"
 }
 
 verifyFileExist() {

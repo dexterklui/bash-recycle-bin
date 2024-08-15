@@ -5,6 +5,7 @@ recycleBin="$HOME/recyclebin"
 
 interactive=false
 verbose=false
+recursive=false
 
 encounteredNonExistingFile=false
 encounteredDir=false
@@ -17,13 +18,16 @@ createRestoreFileIfNotExist() {
 }
 
 parseOpts() {
-	while getopts ":iv" opt; do
+	while getopts ":ivr" opt; do
 		case "$opt" in
 		i)
 			interactive=true
 			;;
 		v)
 			verbose=true
+			;;
+		r)
+			recursive=true
 			;;
 		\?)
 			echo "$0: invalid option: -- $OPTARG"
@@ -47,7 +51,7 @@ validateFile() {
 		return 1
 	fi
 
-	if [ -d "$1" ]; then
+	if [ -d "$1" ] && ! $recursive; then
 		echo "$0: '$1' is a directory, but expect a file"
 		encounteredDir=true
 		return 2
@@ -97,6 +101,23 @@ displayMessageIfVerbose() {
 	fi
 }
 
+# return 0 if successfully removed an empty directory
+# otherwise return non-zero
+rmDirInInteractiveMode() {
+	if [ -d "$1" ]; then
+		if [ -z "$(ls -A "$1")" ]; then
+			# in recursive mode, remove an empty directory
+			rmdir "$1"
+			$verbose && echo "Removed empty directory '$1'"
+			return 0
+		else
+			$verbose && echo "$0: in recursive mode trying to remove directory '$1', but it is not empty, so skipping"
+			return 2
+		fi
+	fi
+	return 1
+}
+
 recycleFile() {
 	if ! validateFile "$1"; then
 		return 1
@@ -104,6 +125,10 @@ recycleFile() {
 
 	if ! confirmRecycleIfInteractive "$1"; then
 		return 2
+	fi
+
+	if rmDirInInteractiveMode "$1"; then
+		return 0
 	fi
 
 	absPath="$(realpath "$1")"
@@ -139,8 +164,16 @@ validateArgs "$@"
 createRestoreFileIfNotExist
 mkdir -p "$recycleBin"
 
-for file in "$@"; do
-	recycleFile "$file"
+for arg in "$@"; do
+	if $recursive; then
+		files=$(find "$arg" -depth)
+
+		for f in $files; do
+			recycleFile "$f"
+		done
+	else
+		recycleFile "$arg"
+	fi
 done
 
 exit "$(calculateExitCode)"
