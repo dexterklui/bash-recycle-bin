@@ -27,7 +27,7 @@ validateFile() {
 		exit 3
 	fi
 
-	if [ "$(readlink -f "$1")" == "$(readlink -f "$0")" ]; then
+	if [ "$(realpath "$1")" == "$(readlink -f "$0")" ]; then
 		echo "$0: cannot recycle itself"
 		exit 4
 	fi
