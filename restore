@@ -69,7 +69,7 @@ removeRecord() {
 }
 
 askForOverwrite() {
-	read -p "Do you want to overwrite the existing file '$1'? (y/n): " answer
+	read -rp "Do you want to overwrite the existing file '$1'? (y/n): " answer
 	if echo -n "$answer" | grep -qive '^y'; then
 		exit 1
 	fi

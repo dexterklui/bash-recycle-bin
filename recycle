@@ -89,7 +89,7 @@ confirmRecycleIfInteractive() {
 	if ! "$interactive"; then
 		return 0
 	fi
-	read -p "Do you want to recycle '$1'? (y/n): " answer
+	read -rp "Do you want to recycle '$1'? (y/n): " answer
 	if echo -n "$answer" | grep -qive '^y'; then
 		return 1
 	fi
