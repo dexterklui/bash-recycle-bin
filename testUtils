@@ -1,0 +1,20 @@
+#!/bin/bash
+
+export restoreFile="$HOME/.restore.info"
+export restoreInfoSep=':'
+export recycleBin="$HOME/recyclebin"
+export tmpDir='tmpDir'
+export tmpFile='tmpFile'
+
+clearRecycleBin() {
+	rm "$recycleBin"/*
+}
+
+clearRestoreInfo() {
+	cat /dev/null >"$restoreFile"
+}
+
+clearAll() {
+	clearRecycleBin
+	clearRestoreInfo
+}

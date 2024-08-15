@@ -1,11 +1,5 @@
 #!/bin/bash
 
-restoreFile="$HOME/.restore.info"
-restoreInfoSep=':'
-recycleBin="$HOME/recyclebin"
-tmpDir='tmpDir'
-tmpFile='tmpFile'
-
 # 1st arg: test description
 # 2nd arg: command to execute
 # 3rd arg (optional): expected result
@@ -50,20 +44,15 @@ printTestMsgHeader() {
 	printf "\033[1;34mTest %s:\033[0m %s\n" "$1" "$2"
 }
 
-clearRecycleBin() {
-	rm "$recycleBin"/*
-}
+##########
+# Set up #
+##########
 
-clearRestoreInfo() {
-	cat /dev/null >"$restoreFile"
-}
+. ./testUtils
 
-clearAll() {
-	clearRecycleBin
-	clearRestoreInfo
-}
-
-# Test cases:
+##############
+# Test cases #
+##############
 
 rm -r "$recycleBin"
 clearAll
