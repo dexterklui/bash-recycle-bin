@@ -5,12 +5,12 @@
 ##########
 
 . ./testUtils
+. ./exportEnv
+clearAll
 
 ##############
 # Test cases #
 ##############
-
-clearAll
 
 testName="No argument"
 cmd="bash ./restore"
@@ -38,7 +38,4 @@ verifyFileNotExist "$recycleBin/$recycleFileName"
 checkRestoreInfoNotExist "$recycleFileName" "$absPath"
 checkRestoreInfo "random-file_72189214" "/tmp/non-existing-dir/random-file" # check the random record is still there
 rm "$fileName"
-cat /dev/null >"$restoreFile"
-clearAll
-
 clearAll

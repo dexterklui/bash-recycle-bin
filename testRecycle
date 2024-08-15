@@ -5,12 +5,12 @@
 ##########
 
 . ./testUtils
+. ./exportEnv
+clearAll
 
 ##############
 # Test cases #
 ##############
-
-clearAll
 
 testExe 'no argument' 'bash ./recycle' \
 	'./recycle: no filename is provided'
