@@ -1,5 +1,7 @@
 #!/bin/bash
 
+tmpDir='tmpDir'
+
 testExe() {
 	printTestMsgHeader "$1"
 	eval "$1"
@@ -14,3 +16,7 @@ printTestMsgHeader() {
 
 testExe 'bash ./recycle'
 testExe 'bash ./recycle non-existing-file'
+
+mkdir -p "$tmpDir"
+testExe "bash ./recycle $tmpDir"
+rmdir "$tmpDir"

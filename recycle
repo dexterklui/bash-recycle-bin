@@ -12,6 +12,11 @@ validateFile() {
 		echo "$0: file '$1' does not exist"
 		exit 2
 	fi
+
+	if [ -d "$1" ]; then
+		echo "$0: '$1' is a directory, but expect a file"
+		exit 3
+	fi
 }
 
 validateArgs "$@"
