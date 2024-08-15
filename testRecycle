@@ -136,4 +136,4 @@ verifyFileExist "$recycleBin/$recycleFileName"
 checkRestoreInfo "$recycleFileName" "$realPath"
 verifyFileNotExist "$recycleBin/$dirRecycleFileName"
 checkRestoreInfoNotExist "$dirRecycleFileName" "$dirRealPath"
-cleanAll
+clearAll
