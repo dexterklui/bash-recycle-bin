@@ -58,21 +58,21 @@ hasRecord() {
 	fi
 }
 
+# get record for a file with the recycled file name ({originalFileName}_{inodeNumber})
 getRecord() {
-	# XXX: use regex, but only after escaping regex meta characters
-	grep -F -e "$1" "$restoreFile" 2>/dev/null
+	grep -Ee "^$(escapeForRegex "$1"):" "$restoreFile" 2>/dev/null
 }
 
 getRecordsFromAbsPath() {
 	grep -Ee ":$(escapeForRegex "$1")" "$restoreFile"
 }
 
+# remove record for a file with the recycled file name ({originalFileName}_{inodeNumber})
 removeRecord() {
 	local record
 	record="$(getRecord "$1")"
-	# XXX: use regex, but only after escaping regex meta characters
 	# TODO: use sed to remove the record in place
-	grep -Fv -e "$record" "$restoreFile" >"$tmpRestoreFile"
+	grep -Eve "^$(escapeForRegex "$record")$" "$restoreFile" >"$tmpRestoreFile"
 	cp "$tmpRestoreFile" "$restoreFile"
 	rm "$tmpRestoreFile"
 }

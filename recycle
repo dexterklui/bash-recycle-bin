@@ -71,13 +71,16 @@ getRecycleFileName() {
 	unset inodeNumber
 }
 
+escapeForRegex() {
+	echo -n "$1" | sed -E 's/([][()^$+|.*\{}])/\\\1/g'
+}
+
 # 1st arg: recycle file name
 # 2nd arg: absolute path
 writeRecord() {
 	record="$1:$2"
 
-	# XXX: use regex, but only after escaping regex meta characters
-	if grep -Fqe "$record" "$restoreFile"; then
+	if grep -Eqe "^$(escapeForRegex "$record")$" "$restoreFile"; then
 		echo "$0: record '$record' already exists in '$restoreFile', you can't recycle same filename with same inode number"
 		exit 10
 	else
