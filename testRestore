@@ -39,3 +39,39 @@ checkRestoreInfoNotExist "$recycleFileName" "$absPath"
 checkRestoreInfo "random-file_72189214" "/tmp/non-existing-dir/random-file" # check the random record is still there
 rm "$fileName"
 clearAll
+
+testName="Restore a single file overwriting an existing file"
+fileName="testFile"
+touch "$fileName"
+inodeNumber="$(getInodeNumber "$fileName")"
+absPath="$(realpath "$fileName")"
+recycleFileName="${fileName}_${inodeNumber}"
+echo "$recycleFileName:$absPath" >"$restoreFile"
+mv "$fileName" "$recycleBin/$recycleFileName"
+touch "$fileName" # create a existing file to be overwritten by the restore
+echo "y" >"$tmpInput"
+cmd="bash ./restore \"$recycleFileName\" <\"$tmpInput\""
+testExe "$testName" "$cmd" ''
+verifyFileExist "$fileName"
+verifyFileNotExist "$recycleBin/$recycleFileName"
+checkRestoreInfoNotExist "$recycleFileName" "$absPath"
+rm "$fileName"
+clearAll
+
+testName="Not overwriting an existing file when restoring it"
+fileName="testFile"
+touch "$fileName"
+inodeNumber="$(getInodeNumber "$fileName")"
+absPath="$(realpath "$fileName")"
+recycleFileName="${fileName}_${inodeNumber}"
+echo "$recycleFileName:$absPath" >"$restoreFile"
+mv "$fileName" "$recycleBin/$recycleFileName"
+touch "$fileName" # create a existing file to prompt for whether to overwrite
+echo "n" >"$tmpInput"
+cmd="bash ./restore \"$recycleFileName\" <\"$tmpInput\""
+testExe "$testName" "$cmd" ''
+verifyFileExist "$fileName"
+verifyFileExist "$recycleBin/$recycleFileName"
+checkRestoreInfo "$recycleFileName" "$absPath"
+rm "$fileName"
+clearAll

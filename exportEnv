@@ -5,3 +5,4 @@ export restoreInfoSep=':'
 export recycleBin="$HOME/recyclebin"
 export tmpDir='tmpDir'
 export tmpFile='tmpFile'
+export tmpInput='tmpInput'
