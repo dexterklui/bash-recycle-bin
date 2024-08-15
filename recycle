@@ -3,6 +3,10 @@
 restoreFile="$HOME/.restore.info"
 recycleBin="$HOME/recyclebin"
 
+encounteredNonExistingFile=false
+encounteredDir=false
+attemptedToRecycleSelf=false
+
 createRestoreFileIfNotExist() {
 	if [ ! -e "$restoreFile" ]; then
 		touch "$restoreFile"
@@ -19,17 +23,20 @@ validateArgs() {
 validateFile() {
 	if [ ! -e "$1" ]; then
 		echo "$0: file '$1' does not exist"
-		exit 2
+		encounteredNonExistingFile=true
+		return 1
 	fi
 
 	if [ -d "$1" ]; then
 		echo "$0: '$1' is a directory, but expect a file"
-		exit 3
+		encounteredDir=true
+		return 2
 	fi
 
 	if [ "$(realpath "$1")" == "$(readlink -f "$0")" ]; then
 		echo "$0: cannot recycle itself"
-		exit 4
+		attemptedToRecycleSelf=true
+		return 4
 	fi
 }
 
@@ -54,13 +61,30 @@ writeRecord() {
 }
 
 recycleFile() {
-	validateFile "$1"
+	if ! validateFile "$1"; then
+		return 1
+	fi
 
 	absPath="$(realpath "$1")"
 	recycleFileName="$(getRecycleFileName "$1")"
 
 	mv "$1" "$recycleBin/$recycleFileName"
 	writeRecord "$recycleFileName:$absPath"
+}
+
+calculateExitCode() {
+	local exitCode
+	exitCode=0
+	if $encounteredNonExistingFile; then
+		(("exitCode+=1"))
+	fi
+	if $encounteredDir; then
+		(("exitCode+=2"))
+	fi
+	if $attemptedToRecycleSelf; then
+		(("exitCode+=4"))
+	fi
+	echo $exitCode
 }
 
 ########
@@ -74,3 +98,5 @@ mkdir -p "$recycleBin"
 for file in "$@"; do
 	recycleFile "$file"
 done
+
+exit "$(calculateExitCode)"

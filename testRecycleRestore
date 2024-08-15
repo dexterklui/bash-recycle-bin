@@ -61,3 +61,23 @@ checkRestoreInfoNotExist "${fileName1}_$inodeNumber1" "$absPath1"
 checkRestoreInfo "${fileName2}_$inodeNumber2" "$absPath2"
 rm "$fileName1"
 clearAll
+
+testName="Recycling multiple files won't stop at non-existing file"
+fileName1="testFile1"
+fileName2="testFile2"
+touch "$fileName1" "$fileName2"
+inodeNumber1="$(getInodeNumber "$fileName1")"
+inodeNumber2="$(getInodeNumber "$fileName2")"
+absPath1="$(realpath "$fileName1")"
+absPath2="$(realpath "$fileName2")"
+cmd="bash ./recycle \"$fileName2\" \"non-existing-file\" \"$fileName1\"; bash ./restore ${fileName1}_$inodeNumber1"
+testExe "$testName" "$cmd" \
+	"./recycle: file 'non-existing-file' does not exist"
+verifyFileExist "$fileName1"
+verifyFileExist "$recycleBin/${fileName2}_$inodeNumber2"
+verifyFileNotExist "$recycleBin/${fileName1}_$inodeNumber1"
+verifyFileNotExist "$fileName2"
+checkRestoreInfoNotExist "${fileName1}_$inodeNumber1" "$absPath1"
+checkRestoreInfo "${fileName2}_$inodeNumber2" "$absPath2"
+rm "$fileName1"
+clearAll
