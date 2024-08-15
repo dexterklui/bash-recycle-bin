@@ -1,0 +1,10 @@
+#!/bin/bash
+
+validateArgs() {
+	if [ "$#" -le 0 ]; then
+		echo "$0: no filename is provided"
+		exit 1
+	fi
+}
+
+validateArgs "$@"
