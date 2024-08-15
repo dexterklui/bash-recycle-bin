@@ -102,3 +102,20 @@ inodeNumber="$(ls -i "$tmpFile" | cut -d' ' -f1)"
 testExe 'recycling file updates .restore.info' "bash ./recycle \"$tmpFile\"" ''
 checkRestoreInfo "${tmpFile}_$inodeNumber" "$absPath"
 clearAll
+
+testName='removing multiple files with same filename'
+file1="$tmpFile"
+file2="$tmpDir/$tmpFile"
+mkdir -p "$tmpDir"
+touch "$file1" "$file2"
+path1="$(realpath "$file1")"
+path2="$(realpath "$file2")"
+inode1="$(ls -i "$file1" | cut -d' ' -f1)"
+inode2="$(ls -i "$file2" | cut -d' ' -f1)"
+testExe "$testName" "bash ./recycle \"$file1\"; bash ./recycle \"$file2\"" ''
+checkRestoreInfo "${tmpFile}_$inode1" "$path1"
+checkRestoreInfo "${tmpFile}_$inode2" "$path2"
+verifyFileExist "$recycleBin/${tmpFile}_$inode1"
+verifyFileExist "$recycleBin/${tmpFile}_$inode2"
+rmdir "$tmpDir"
+clearAll
