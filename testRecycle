@@ -13,9 +13,9 @@ testExe() {
 
 	if [ "$#" -ge 3 ]; then
 		if [ "$result" = "$3" ]; then
-			echo -e "\033[1;32mTest passed\033[0m"
+			echo -e "\033[1;32mOutput passed\033[0m"
 		else
-			echo -e "\033[1;31mTest failed\033[0m"
+			echo -e "\033[1;31mOuput unmatched\033[0m"
 			echo "Expected: $3"
 			echo "Got: $result"
 			exit 1
