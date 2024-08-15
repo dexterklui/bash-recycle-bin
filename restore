@@ -34,6 +34,10 @@ validateFile() {
 	fi
 }
 
+escapeForRegex() {
+	echo -n "$1" | sed -E 's/([][()^$+|.*\{}])/\\\1/g'
+}
+
 hasRecord() {
 	record="$(getRecord "$1")"
 	numberOfRecords="$(echo "$record" | wc -l)"
@@ -66,6 +70,35 @@ removeRecord() {
 	grep -Fv -e "$record" "$restoreFile" >"$tmpRestoreFile"
 	cp "$tmpRestoreFile" "$restoreFile"
 	rm "$tmpRestoreFile"
+}
+
+# if there is no possible valid absolute path, then result is not well defined
+recreateAbsPath() {
+	local absPath
+
+	if [ "${1:0:1}" == '/' ]; then
+		absPath="$1"
+	else
+		absPath="$PWD/$1"
+	fi
+
+	# squeeze consecutive slashes
+	absPath="$(echo -n "$PWD/$1" | sed -E 's:/{2,}:/:g')"
+
+	# replace '/./' with '/'
+	while echo -n "$absPath" | grep -qe '/\./'; do
+		absPath="$(echo -n "$absPath" | sed 's:/\./:/:')"
+	done
+
+	# remove trailing '/.' or trailing '/'
+	absPath="$(echo -n "$absPath" | sed -E 's:/\.$|/$::')"
+
+	# resolve '..'
+	while echo -n "$absPath" | grep -Eqe '/[^/]+/\.\.'; do
+		absPath="$(echo -n "$absPath" | sed -E 's:/[^/]+/\.\.::')"
+	done
+
+	echo "$absPath"
 }
 
 askForOverwrite() {
