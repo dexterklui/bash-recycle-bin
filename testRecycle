@@ -96,3 +96,17 @@ touch "$fileName"
 cmd="bash ./recycle -v \"$fileName\""
 testExe "$testName" "$cmd" "Recycled '$fileName'"
 clearAll
+
+testName='recycle in both verbose and interactive mode'
+fileName="testFile"
+touch "$fileName"
+inodeNumber="$(getInodeNumber "$fileName")"
+absPath="$(realpath "$fileName")"
+recycleFileName="${fileName}_${inodeNumber}"
+echo "y" >"$tmpInput"
+cmd="bash ./recycle -vi \"$fileName\" <\"$tmpInput\""
+testExe "$testName" "$cmd" "Recycled '$fileName'"
+verifyFileExist "$recycleBin/$recycleFileName"
+verifyFileNotExist "$fileName"
+checkRestoreInfo "$recycleFileName" "$absPath"
+clearAll
