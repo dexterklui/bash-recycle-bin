@@ -3,6 +3,8 @@
 restoreFile="$HOME/.restore.info"
 recycleBin="$HOME/recyclebin"
 
+interactive=false
+
 encounteredNonExistingFile=false
 encounteredDir=false
 attemptedToRecycleSelf=false
@@ -13,10 +15,24 @@ createRestoreFileIfNotExist() {
 	fi
 }
 
+parseOpts() {
+	while getopts ":i" opt; do
+		case "$opt" in
+		i)
+			interactive=true
+			;;
+		\?)
+			echo "$0: invalid option: -- $OPTARG"
+			exit 8
+			;;
+		esac
+	done
+}
+
 validateArgs() {
 	if [ "$#" -le 0 ]; then
 		echo "$0: no filename is provided"
-		exit 1
+		exit 9
 	fi
 }
 
@@ -54,15 +70,29 @@ writeRecord() {
 
 	if grep -Fqe "$record" "$restoreFile"; then
 		echo "$0: record '$record' already exists in '$restoreFile', you can't recycle same filename with same inode number"
-		exit 5
+		exit 10
 	else
 		echo "$record" >>"$restoreFile"
+	fi
+}
+
+confirmRecycleIfInteractive() {
+	if ! "$interactive"; then
+		return 0
+	fi
+	read -p "Do you want to recycle '$1'? (y/n): " answer
+	if echo -n "$answer" | grep -qive '^y'; then
+		return 1
 	fi
 }
 
 recycleFile() {
 	if ! validateFile "$1"; then
 		return 1
+	fi
+
+	if ! confirmRecycleIfInteractive "$1"; then
+		return 2
 	fi
 
 	absPath="$(realpath "$1")"
@@ -91,6 +121,8 @@ calculateExitCode() {
 # main #
 ########
 
+parseOpts "$@"
+shift $((OPTIND - 1))
 validateArgs "$@"
 createRestoreFileIfNotExist
 mkdir -p "$recycleBin"
