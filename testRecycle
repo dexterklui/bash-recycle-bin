@@ -1,6 +1,8 @@
 #!/bin/bash
 
+recycleBin="$HOME/recyclebin"
 tmpDir='tmpDir'
+tmpFile='tmpFile'
 
 # 1st arg: test description
 # 2nd arg: command to execute
@@ -19,7 +21,15 @@ testExe() {
 			exit 1
 		fi
 	else
-		echo -e "Result: $result"
+		echo -e "Output: $result"
+	fi
+}
+
+verifyFileExist() {
+	if [ ! -e "$1" ]; then
+		echo -e "\033[1;31mTest failed\033[0m"
+		echo "File '${1}' does not exist"
+		exit 2
 	fi
 }
 
@@ -27,7 +37,14 @@ printTestMsgHeader() {
 	printf "\033[1;34mTest %s:\033[0m %s\n" "$1" "$2"
 }
 
+clearRecycleBin() {
+	rm "$recycleBin"/*
+}
+
 # Test cases:
+
+rm -r "$recycleBin"
+clearRecycleBin
 
 testExe 'no argument' 'bash ./recycle' \
 	'./recycle: no filename is provided'
@@ -41,3 +58,18 @@ rmdir "$tmpDir"
 
 testExe 'recycle the recycle script itself' 'bash ./recycle ./recycle' \
 	"./recycle: cannot recycle itself"
+
+touch "$tmpFile"
+inodeNumber="$(ls -i "$tmpFile" | cut -d' ' -f1)"
+testExe 'recycle single file does put into recyle bin' "bash ./recycle \"$tmpFile\""
+verifyFileExist "$recycleBin/${tmpFile}_$inodeNumber"
+clearRecycleBin
+
+mkdir -p "$tmpDir"
+targetFile="$tmpDir/$tmpFile"
+touch "$targetFile"
+inodeNumber="$(ls -i "$targetFile" | cut -d' ' -f1)"
+testExe 'recycle single file in a directory does put into recyle bin' "bash ./recycle \"$targetFile\""
+verifyFileExist "$recycleBin/${tmpFile}_$inodeNumber"
+rmdir "$tmpDir"
+clearRecycleBin

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+recycleBin="$HOME/recyclebin"
+
 validateArgs() {
 	if [ "$#" -le 0 ]; then
 		echo "$0: no filename is provided"
@@ -24,5 +26,18 @@ validateFile() {
 	fi
 }
 
+getRecycleFileName() {
+	inodeNumber="$(ls -i "$1" | cut -d' ' -f1)"
+	basefilename="$(basename "$1")"
+	echo "${basefilename}_${inodeNumber}"
+	unset inodeNumber
+}
+
+recycleFile() {
+	validateFile "$1"
+	mv "$1" "$recycleBin/$(getRecycleFileName "$1")"
+}
+
 validateArgs "$@"
-validateFile "$1"
+mkdir -p "$recycleBin"
+recycleFile "$1"
