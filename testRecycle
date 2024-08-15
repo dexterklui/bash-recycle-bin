@@ -20,7 +20,7 @@ testExe 'no argument' 'bash ./recycle'
 testExe 'provided single non-existing file' 'bash ./recycle non-existing-file'
 
 mkdir -p "$tmpDir"
-testExe 'provided single directory' "bash ./recycle $tmpDir"
+testExe 'provided single directory' "bash ./recycle \"$tmpDir\""
 rmdir "$tmpDir"
 
 testExe 'recycle the recycle script itself' 'bash ./recycle ./recycle'
