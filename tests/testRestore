@@ -11,6 +11,13 @@ clearAll
 
 printf "\033[1;35mStarting Test Suite:\033[0m %s\n" "$0"
 
+echo "WARNING: running tests will remove all files in the recycle bin and remove all records in .restore.info"
+echo "Do you want to continue? (y/n)"
+read -r answer
+if [ "$answer" != "y" ]; then
+	exit 1
+fi
+
 ##############
 # Test cases #
 ##############

@@ -1,6 +1,9 @@
 test:
 	tests/test
 
+test-y:
+	tests/test < <(echo 'y')
+
 zip:
 	zip recyclebin.zip recycle restore README.md
 
@@ -11,4 +14,4 @@ clean:
 	rm -f recyclebin.zip
 	rm -f recyclebinWithTests.zip
 
-.PHONY: test zip zipwithtests clean
+.PHONY: test test-y zip zipwithtests clean

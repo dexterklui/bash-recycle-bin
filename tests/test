@@ -1,7 +1,14 @@
 #!/bin/bash
 
+echo "WARNING: running tests will remove all files in the recycle bin and remove all records in .restore.info"
+echo "Do you want to continue? (y/n)"
+read -r answer
+if [ "$answer" != "y" ]; then
+	exit 1
+fi
+
 cd "$(dirname "$0")" || exit 1
 
-./testRecycle
-./testRestore
-./testRecycleRestore
+./testRecycle < <(echo 'y')
+./testRestore < <(echo 'y')
+./testRecycleRestore < <(echo 'y')

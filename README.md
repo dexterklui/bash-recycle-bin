@@ -34,7 +34,12 @@ The repository contains two main scripts:
 
 The repository also includes a Makefile with the following targets:
 
-- `test`: run test suites in the `tests` directory
+- `test`: run test suites in the `tests` directory. Will prompt for `y/n` before
+  continuing, as running tests will remove all files
+  in the recycle bin and remove all records in `.restore.info`
+- `test-y`: like `test` phony target, but automatically answers `y` to the
+  prompt. WARNING, this will remove all files in the recycle bin and remove all
+  records in `.restore.info`
 - `zip`: create a `recyclebin.zip` containing the two main scripts
 - `zipwithtests`: create a `recyclebinWithTests.zip` containing the two main scripts and the tests in `tests` directory
 - `clean`: remove any created zip files
