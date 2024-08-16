@@ -127,11 +127,11 @@ validateFile() {
 # arg1 - the path to the original file
 # output - the recycled file name in the format of `{originalFileName}_{inodeNumber}`
 getRecycleFileName() {
-	# TODO: use local variable
+	local inodeNumber
+	local basefilename
 	inodeNumber="$(ls -i "$1" | cut -d' ' -f1)"
 	basefilename="$(basename "$1")"
 	echo "${basefilename}_${inodeNumber}"
-	unset inodeNumber
 }
 
 # check if a record (for a recycled filename and absolute path)
