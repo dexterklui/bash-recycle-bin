@@ -171,8 +171,7 @@ validateFile() {
 getRecycleFileName() {
 	local inodeNumber
 	local basefilename
-	# TODO: use stat instead
-	inodeNumber="$(ls -i "$1" | cut -d' ' -f1)"
+	inodeNumber="$(stat -c'%i' "$1")"
 	basefilename="$(basename "$1")"
 	echo "${basefilename}_${inodeNumber}"
 }
