@@ -267,7 +267,7 @@ recycleFile() {
 
 	hasDuplicateRecord "$recycleFileName" "$absPath" && return 2
 
-	ln "$1" "$recycleBin/$recycleFileName" && rm "$1"
+	mv "$1" "$recycleBin/$recycleFileName"
 	displayMessageIfVerbose "$1"
 	writeRecord "$recycleFileName" "$absPath"
 }
