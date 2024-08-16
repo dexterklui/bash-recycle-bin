@@ -27,6 +27,9 @@ encounteredDir=false
 # flag for attempted to recycle itself
 attemptedToRecycleSelf=false
 
+# flag for encountered file with a duplicated record
+encounteredDuplicate=false
+
 # create an empty restore file if not exist
 createRestoreFileIfNotExist() {
 	if [ ! -e "$restoreFile" ]; then
@@ -122,20 +125,32 @@ escapeForRegex() {
 	echo -n "$1" | sed -E 's/([][()^$+|.*\{}])/\\\1/g'
 }
 
-# Write a record to the restore file
+# check if a record (for a recycled filename and absolute path)
+# already exists in the restore file
+#
 # arg1 - recycled file name in the format of `{originalFileName}_{inodeNumber}`
 # arg2 - original absolute path
-# output - error message if record already exists
-# exit - 18 if record already exists
-writeRecord() {
+#
+# output - error message if duplicate record found
+# return - 0 if duplicate record found; 1 if no duplicate record
+hasDuplicateRecord() {
 	record="$1$separator$2"
 
 	if grep -Eqe "^$(escapeForRegex "$record")$" "$restoreFile"; then
-		echo "$0: record '$record' already exists in '$restoreFile', you can't recycle same filename with same inode number"
-		exit 18
-	else
-		echo "$record" >>"$restoreFile"
+		encounteredDuplicate=true
+		echo "$0: record '$record' already exists in '$restoreFile', you can't recycle same filename with same inode number (e.g. hardlink with same filename)"
+		return 0
 	fi
+
+	return 1
+}
+
+# Append a record to the restore file
+# arg1 - recycled file name in the format of `{originalFileName}_{inodeNumber}`
+# arg2 - original absolute path
+writeRecord() {
+	record="$1$separator$2"
+	echo "$record" >>"$restoreFile"
 }
 
 # prompt user to confirm recycling a file if in interactive mode
@@ -189,10 +204,10 @@ rmDirInInteractiveMode() {
 # output - 1) verbose messages if in verbose mode
 #          2) error message if the file cannot be recycled,
 #             or if trying to remove a directory that is not empty,
-#             or if trying to write a record that already exists
+#             or if there is a duplicate record for the file
 # return - 1 if the file cannot be recycled
-# exit - 18 if record already exists,
-#        or non-zero if serious error in moving file to recycle bin
+#          2 if there is a duplicate record for the file
+# exit - non-zero if serious error in moving file to recycle bin
 recycleFile() {
 	if ! validateFile "$1"; then
 		return 1
@@ -209,10 +224,12 @@ recycleFile() {
 	absPath="$(realpath "$1")"
 	recycleFileName="$(getRecycleFileName "$1")"
 
-	# FIX: check if record already exists before moving file
+	if hasDuplicateRecord "$recycleFileName" "$absPath"; then
+		return 2
+	fi
+
 	mv "$1" "$recycleBin/$recycleFileName"
 	displayMessageIfVerbose "$1"
-	# FIX: writeRecord should return instead of exit
 	writeRecord "$recycleFileName" "$absPath"
 }
 
@@ -221,6 +238,7 @@ recycleFile() {
 #          1st bit (1): if encountered non existing file
 #          2nd bit (2): if encountered directory in non-recursive mode
 #          3rd bit (4): if attempted to recycle itself
+#          4th bit (8): if encountered file with a duplicated record
 calculateExitCode() {
 	# TODO: more bits for more flags
 	local exitCode
@@ -233,6 +251,9 @@ calculateExitCode() {
 	fi
 	if $attemptedToRecycleSelf; then
 		(("exitCode+=4"))
+	fi
+	if $encounteredDuplicate; then
+		(("exitCode+=8"))
 	fi
 	echo $exitCode
 }
