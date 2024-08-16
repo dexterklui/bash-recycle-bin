@@ -28,17 +28,25 @@ testExe() {
 }
 
 clearRecycleBin() {
-	rm "$recycleBin"/* 2>/dev/null
+	find "$recycleBin" -mindepth 1 -delete
 }
 
 clearRestoreInfo() {
-	cat /dev/null >"$restoreFile"
+	if [ -e "$restoreFile" ]; then
+		cat /dev/null >"$restoreFile"
+	fi
+}
+
+clearTmpInput() {
+	if [ -e "$tmpInput" ]; then
+		rm "$tmpInput" 2>/dev/null
+	fi
 }
 
 clearAll() {
 	clearRecycleBin
 	clearRestoreInfo
-	rm "$tmpInput" 2>/dev/null
+	clearTmpInput
 }
 
 getInodeNumber() {
