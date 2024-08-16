@@ -1,6 +1,6 @@
 #!/bin/bash
 
-##################################################
+##### BEGIN HELP MESSAGE #########################
 #
 # A script to restore recycled files from the recycle bin.
 #
@@ -9,6 +9,7 @@
 #     restore -r {destination-path}
 #
 # Options:
+#     -h: display this help message
 #     -r: restore recursively all recycled files that were originally at or
 #         under a destination path
 #
@@ -22,7 +23,7 @@
 # The script will create non-existing directories if needed to restore a file to
 # its original position.
 #
-##################################################
+##### END HELP MESSAGE ###########################
 
 # the path the the file storing records of recycled files
 restoreFile="$HOME/.restore.info"
@@ -33,19 +34,33 @@ recycleBin="$HOME/recyclebin"
 # flag for recursive mode
 recursive=false
 
+printHelp() {
+	local beginLineNum
+	local endLineNum
+	beginLineNum="$(grep -n '^##### BEGIN HELP MESSAGE' "$0" | cut -d: -f1)"
+	endLineNum="$(grep -n '^##### END HELP MESSAGE' "$0" | cut -d: -f1)"
+	head -n "$((endLineNum - 2))" "$0" | tail -n "+$((beginLineNum + 2))" | cut -c3-
+}
+
 # parse options for the script
 #   -r - restore recursively all recycled files at or under a given destination
 #        path
+#   -h - help: display usage of the script
 # output - error message if invalid option is provided
 # exit - 8 if invalid option is provided
 parseOpts() {
-	while getopts ":r" opt; do
+	while getopts ":rh" opt; do
 		case "$opt" in
 		r)
 			recursive=true
 			;;
+		h)
+			printHelp
+			exit 0
+			;;
 		\?)
 			echo "$0: invalid option: -- $OPTARG"
+			echo "Try '$0 -h' for more usage."
 			exit 8
 			;;
 		esac

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-##################################################
+##### BEGIN HELP MESSAGE #########################
 #
 # A script to recycle files to the recycle bin.
 #
@@ -9,6 +9,7 @@
 #     recycle [opt]... {path}...
 #
 # Options:
+#     -h: display this help message
 #     -i: interactive mode: prompt user before recycling a file
 #     -v: verbose mode: display a message after recycling a file
 #     -r: recycle files recursively for a given path, directories are removed
@@ -23,7 +24,7 @@
 # to recycle a file if there is already a recycled file with the same base
 # filename and inode number (e.g. hardlink with the same filename).
 #
-##################################################
+##### END HELP MESSAGE ###########################
 
 # the path of the restore file storing records of recycled files
 restoreFile="$HOME/.restore.info"
@@ -72,14 +73,23 @@ createRestoreFileIfNotExist() {
 	fi
 }
 
+printHelp() {
+	local beginLineNum
+	local endLineNum
+	beginLineNum="$(grep -n '^##### BEGIN HELP MESSAGE' "$0" | cut -d: -f1)"
+	endLineNum="$(grep -n '^##### END HELP MESSAGE' "$0" | cut -d: -f1)"
+	head -n "$((endLineNum - 2))" "$0" | tail -n "+$((beginLineNum + 2))" | cut -c3-
+}
+
 # parse options for the script
 # -i - interactive mode: prompt user before recycling a file
 # -v - verbose mode: display a message after recycling a file
 # -r - recycle files recursively for a given path
+# -h - help: display usage of the script
 # output - error message if invalid option is provided
 # exit - 32 if invalid option is provided
 parseOpts() {
-	while getopts ":ivr" opt; do
+	while getopts ":ivrh" opt; do
 		case "$opt" in
 		i)
 			interactive=true
@@ -90,8 +100,13 @@ parseOpts() {
 		r)
 			recursive=true
 			;;
+		h)
+			printHelp
+			exit 0
+			;;
 		\?)
 			echo "$0: invalid option: -- $OPTARG"
+			echo "Try '$0 -h' for more usage."
 			exit 32
 			;;
 		esac

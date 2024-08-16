@@ -73,7 +73,8 @@ touch "$fileName"
 inodeNumber="$(getInodeNumber "$fileName")"
 absPath="$(realpath "$fileName")"
 recycleFileName="${fileName}_${inodeNumber}"
-testExe "$testName" "bash '$projectRoot/recycle' -x \"$fileName\"" "$projectRoot/recycle: invalid option: -- x"
+expectedOutput="$projectRoot/recycle: invalid option: -- x"$'\n'"Try '$projectRoot/recycle -h' for more usage."
+testExe "$testName" "bash '$projectRoot/recycle' -x \"$fileName\"" "$expectedOutput"
 verifyFileExist "$fileName"
 verifyFileNotExist "$recycleBin/$recycleFileName"
 checkRestoreInfoNotExist "$recycleFileName" "$absPath"
@@ -169,3 +170,10 @@ expectedOutput="$projectRoot/recycle: cannot recycle file '$recycleBin/testfile'
 testExe "$testName" "$cmd" "$expectedOutput"
 verifyFileExist "$recycleBin/testfile"
 clearAll
+
+testName='help mode should print help message'
+cmd="bash '$projectRoot/recycle' -h"
+beginLineNum="$(grep -n '^##### BEGIN HELP MESSAGE' "$projectRoot/recycle" | cut -d: -f1)"
+endLineNum="$(grep -n '^##### END HELP MESSAGE' "$projectRoot/recycle" | cut -d: -f1)"
+expectedOutput="$(head -n "$((endLineNum - 2))" "$projectRoot/recycle" | tail -n "+$((beginLineNum + 2))" | cut -c3-)"
+testExe "$testName" "$cmd" "$expectedOutput"
