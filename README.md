@@ -42,5 +42,5 @@ The repository also includes a Makefile with the following targets:
 ## Usage
 
 1. Clone the repository: `git clone https://github.com/dexterklui/bash-recycle-bin.git`
-2. Navigate to the project directory: `cd recyclebin`
+2. Navigate to the project directory
 3. Use the `recycle` and `restore` scripts as described above.
