@@ -147,6 +147,8 @@ userConfirmOverwrite() {
 }
 
 # restore a file from the recycle bin given its recycled-file name.
+# Note: In recursive mode, provided recycled-file name should be extracted
+#       from the records already, so this function will skip validation
 #
 # arg1 - recycled-file name in the format of `{originalFileName}_{inodeNumber}`
 #
@@ -155,9 +157,10 @@ userConfirmOverwrite() {
 #
 # exit - 0 if the file is successfully restored; non-zero otherwise
 restoreFile() {
-	# TODO: skip validate in recursive mode to enhance redundant validation
-	validateFile "$1"
-	validateHasRecord "$1"
+	if ! $recursive; then
+		validateFile "$1"
+		validateHasRecord "$1"
+	fi
 
 	absPath="$(getRecord "$1" | cut -d':' -f2)"
 	if [ ! -e "$absPath" ] || userConfirmOverwrite "$absPath"; then
