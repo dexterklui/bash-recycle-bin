@@ -258,24 +258,14 @@ rmDirIfEmpty() {
 #          2 if there is a duplicate record for the file
 # exit - non-zero if serious error in moving file to recycle bin
 recycleFile() {
-	if ! validateFile "$1"; then
-		return 1
-	fi
-
-	if ! confirmRecycleIfInteractive "$1"; then
-		return 0
-	fi
-
-	if rmDirIfEmpty "$1"; then
-		return 0
-	fi
+	validateFile "$1" || return 1
+	confirmRecycleIfInteractive "$1" || return 0
+	rmDirIfEmpty "$1" && return 0 # in recursive mode, rm empty dir and return
 
 	absPath="$(realpath "$1")"
 	recycleFileName="$(getRecycleFileName "$1")"
 
-	if hasDuplicateRecord "$recycleFileName" "$absPath"; then
-		return 2
-	fi
+	hasDuplicateRecord "$recycleFileName" "$absPath" && return 2
 
 	ln "$1" "$recycleBin/$recycleFileName" && rm "$1"
 	displayMessageIfVerbose "$1"
