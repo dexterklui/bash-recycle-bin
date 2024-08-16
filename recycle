@@ -322,12 +322,9 @@ mkdir -p "$recycleBin"
 
 for arg in "$@"; do
 	if $recursive; then
-		files=$(find "$arg" -depth)
-		IFS=$'\n'
-		for f in $files; do
-			recycleFile "$f"
-		done
-		unset IFS
+		while IFS= read -r -d $'\0' file; do
+			recycleFile "$file"
+		done < <(find "$arg" -depth -print0)
 	else
 		recycleFile "$arg"
 	fi
