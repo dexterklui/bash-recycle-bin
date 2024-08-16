@@ -176,10 +176,11 @@ mkdir -p "$recycleBin"
 for arg in "$@"; do
 	if $recursive; then
 		files=$(find "$arg" -depth)
-
+		IFS=$'\n'
 		for f in $files; do
 			recycleFile "$f"
 		done
+		unset IFS
 	else
 		recycleFile "$arg"
 	fi

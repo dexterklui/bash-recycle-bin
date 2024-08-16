@@ -97,3 +97,19 @@ verifyFileNotExist tmpDir/nestDir
 checkRestoreInfoNotExist "$recycleFileName" "$realPath"
 rm -rf tmpDir
 clearAll
+
+testName='Recursive recycling then recursive restoring with weird names'
+mkdir -p 'tmp Dir/nest+Dir' 'tmp Dir/restore+Dir'
+touch 'tmp Dir/f'{1..3} 'tmp Dir/nest+Dir/f%'\ {1..3} 'tmp Dir/restore+Dir/f%'\ {1..3}
+inodeNumber="$(getInodeNumber 'tmp Dir/restore+Dir/f% 1')"
+recycleFileName="f% 1_$inodeNumber"
+realPath="$(realpath 'tmp Dir/restore+Dir/f% 1')"
+cmd="bash ./recycle -r 'tmp Dir'; bash ./restore -r 'tmp Dir/restore+Dir'"
+testExe "$testName" "$cmd" ''
+verifyFileExist 'tmp Dir/restore+Dir/f% 1'
+verifyFileExist 'tmp Dir/restore+Dir/f% 2'
+verifyFileExist 'tmp Dir/restore+Dir/f% 3'
+verifyFileNotExist 'tmp Dir/nest+Dir'
+checkRestoreInfoNotExist "$recycleFileName" "$realPath"
+rm -rf 'tmp Dir'
+clearAll
