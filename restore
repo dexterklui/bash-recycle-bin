@@ -54,6 +54,7 @@ parseOpts() {
 	while getopts ":rh" opt; do
 		case "$opt" in
 		r)
+			# TODO: prompt when multiple different recycled files with the same original full path
 			recursive=true
 			;;
 		h)
