@@ -136,3 +136,5 @@ beginLineNum="$(grep -n '^##### BEGIN HELP MESSAGE' "$projectRoot/restore" | cut
 endLineNum="$(grep -n '^##### END HELP MESSAGE' "$projectRoot/restore" | cut -d: -f1)"
 expectedOutput="$(head -n "$((endLineNum - 2))" "$projectRoot/restore" | tail -n "+$((beginLineNum + 2))" | cut -c3-)"
 testExe "$testName" "$cmd" "$expectedOutput"
+
+# TODO: test restore with multiple arguments

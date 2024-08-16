@@ -5,8 +5,8 @@
 # A script to restore recycled files from the recycle bin.
 #
 # Usage:
-#     restore {recycled-file-name}
-#     restore -r {destination-path}
+#     restore {recycled-file-name}...
+#     restore -r {destination-path}...
 #
 # Options:
 #     -h: display this help message
@@ -220,14 +220,16 @@ parseOpts "$@"
 shift $((OPTIND - 1))
 validateArgs "$@"
 
-if $recursive; then
-	IFS=$'\n'
-	absPath="$(recreateAbsPath "$1")"
-	updateRecordsFromAbsPath "$absPath"
-	for record in $records; do
-		restoreFile "$(echo "$record" | cut -d':' -f1)"
-	done
-	unset IFS
-else
-	restoreFile "$1"
-fi
+for arg in "$@"; do
+	if $recursive; then
+		IFS=$'\n'
+		absPath="$(recreateAbsPath "$arg")"
+		updateRecordsFromAbsPath "$absPath"
+		for record in $records; do
+			restoreFile "$(echo "$record" | cut -d':' -f1)"
+		done
+		unset IFS
+	else
+		restoreFile "$arg"
+	fi
+done
