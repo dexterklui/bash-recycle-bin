@@ -1,23 +1,45 @@
 #!/bin/bash
 
+# the path of the restore file storing records of recycled files
 restoreFile="$HOME/.restore.info"
+
+# the path to the recycle bin
 recycleBin="$HOME/recyclebin"
+
+# the field separator in the restore file
 separator=":"
 
+# flag for interactive mode
 interactive=false
+
+# flag for verbose mode
 verbose=false
+
+# flag for recursive mode
 recursive=false
 
+# flag for encountered non-existing file
 encounteredNonExistingFile=false
+
+# flag for encountered directory in non-recursive mode
 encounteredDir=false
+
+# flag for attempted to recycle itself
 attemptedToRecycleSelf=false
 
+# create an empty restore file if not exist
 createRestoreFileIfNotExist() {
 	if [ ! -e "$restoreFile" ]; then
 		touch "$restoreFile"
 	fi
 }
 
+# parse options for the script
+# -i - interactive mode: prompt user before recycling a file
+# -v - verbose mode: display a message after recycling a file
+# -r - recycle files recursively for a given path
+# output - error message if invalid option is provided
+# exit - 16 if invalid option is provided
 parseOpts() {
 	while getopts ":ivr" opt; do
 		case "$opt" in
@@ -38,6 +60,9 @@ parseOpts() {
 	done
 }
 
+# validate if the number of arguments is valid (at least 1)
+# output - error message if number of arguments is invalid
+# exit - 17 if number of arguments is invalid
 validateArgs() {
 	if [ "$#" -le 0 ]; then
 		echo "$0: no filename is provided"
@@ -45,7 +70,16 @@ validateArgs() {
 	fi
 }
 
+# validate if a file can be recycled
+# arg1 - the path of the file
+# output - error message if file cannot be recycled
+# exit - 0 if the file can be recycled
+#        1 if file does not exist
+#        2 if in non-recursive mode and file is a directory
+#        4 if file is the script itself
+#        8 if the absolute path contains the field separator of restore file
 validateFile() {
+	# TODO: check if recycling a file already in a recycle bin
 	if [ ! -e "$1" ]; then
 		echo "$0: file '$1' does not exist"
 		encounteredNonExistingFile=true
@@ -70,19 +104,29 @@ validateFile() {
 	fi
 }
 
+# get the would-be recycled file name of a given file
+# arg1 - the path to the original file
+# output - the recycled file name in the format of `{originalFileName}_{inodeNumber}`
 getRecycleFileName() {
+	# TODO: use local variable
 	inodeNumber="$(ls -i "$1" | cut -d' ' -f1)"
 	basefilename="$(basename "$1")"
 	echo "${basefilename}_${inodeNumber}"
 	unset inodeNumber
 }
 
+# escape all meta characters of extended regex in a string
+# arg1 - string to escape
+# output - escaped string
 escapeForRegex() {
 	echo -n "$1" | sed -E 's/([][()^$+|.*\{}])/\\\1/g'
 }
 
-# 1st arg: recycle file name
-# 2nd arg: absolute path
+# Write a record to the restore file
+# arg1 - recycled file name in the format of `{originalFileName}_{inodeNumber}`
+# arg2 - original absolute path
+# output - error message if record already exists
+# exit - 18 if record already exists
 writeRecord() {
 	record="$1$separator$2"
 
@@ -94,6 +138,10 @@ writeRecord() {
 	fi
 }
 
+# prompt user to confirm recycling a file if in interactive mode
+# arg1 - the path of the file
+# exit - 0 if not in interactive mode or if user confirms recycling
+#        1 if in interactive ode and user rejects recycling
 confirmRecycleIfInteractive() {
 	if ! "$interactive"; then
 		return 0
@@ -104,15 +152,24 @@ confirmRecycleIfInteractive() {
 	fi
 }
 
+# display a message about a file being recycled if in verbose mode
+# arg1 - the path of the file being recycled
+# output - message about the file being recycled if in verbose mode
 displayMessageIfVerbose() {
 	if "$verbose"; then
 		echo "Recycled '$1'"
 	fi
 }
 
-# return 0 if successfully removed an empty directory
-# otherwise return non-zero
+# remove (rm) a given directory if it is empty
+# Note that this function doesn't check if the script is in recursive mode
+# output - 1) message about removed directory if in verbose mode
+#          2) error message if the given path is a directory but not empty
+# return - 0 if successfully removed an empty directory
+#          1 if given path is not a directory
+#          2 if the directory is not empty
 rmDirInInteractiveMode() {
+	# TODO: rename function name, it has nothing to do with interactive mode
 	if [ -d "$1" ]; then
 		if [ -z "$(ls -A "$1")" ]; then
 			# in recursive mode, remove an empty directory
@@ -120,6 +177,8 @@ rmDirInInteractiveMode() {
 			$verbose && echo "Removed empty directory '$1'"
 			return 0
 		else
+			# FIX: this doesn't check for recursive mode, so remove that line
+			# FIX: should always echo even not in verbose mode
 			$verbose && echo "$0: in recursive mode trying to remove directory '$1', but it is not empty, so skipping"
 			return 2
 		fi
@@ -127,12 +186,22 @@ rmDirInInteractiveMode() {
 	return 1
 }
 
+# recycle a file
+# arg1 - the path of the file
+# output - 1) verbose messages if in verbose mode
+#          2) error message if the file cannot be recycled,
+#             or if trying to remove a directory that is not empty,
+#             or if trying to write a record that already exists
+# return - 1 if the file cannot be recycled
+# exit - 18 if record already exists,
+#        or non-zero if serious error in moving file to recycle bin
 recycleFile() {
 	if ! validateFile "$1"; then
 		return 1
 	fi
 
 	if ! confirmRecycleIfInteractive "$1"; then
+		# FIX: return 0 because this is not an error
 		return 2
 	fi
 
@@ -143,12 +212,20 @@ recycleFile() {
 	absPath="$(realpath "$1")"
 	recycleFileName="$(getRecycleFileName "$1")"
 
+	# FIX: check if record already exists before moving file
 	mv "$1" "$recycleBin/$recycleFileName"
 	displayMessageIfVerbose "$1"
+	# FIX: writeRecord should return instead of exit
 	writeRecord "$recycleFileName" "$absPath"
 }
 
+# calculate the exit code based on the flags
+# output - the exit code whose bits represent the following:
+#          1st bit (1): if encountered non existing file
+#          2nd bit (2): if encountered directory in non-recursive mode
+#          3rd bit (4): if attempted to recycle itself
 calculateExitCode() {
+	# TODO: more bits for more flags
 	local exitCode
 	exitCode=0
 	if $encounteredNonExistingFile; then
