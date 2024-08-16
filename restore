@@ -37,23 +37,18 @@ escapeForRegex() {
 	echo -n "$1" | sed -E 's/([][()^$+|.*\{}])/\\\1/g'
 }
 
-hasRecord() {
+validateHasRecord() {
 	record="$(getRecord "$1")"
 	numberOfRecords="$(echo "$record" | wc -l)"
 
 	if [ -z "$record" ]; then
-		echo "$0: Can't find restore info for file '$1'"
-		exit 3
-	fi
-
-	if [ "$numberOfRecords" -ge 2 ]; then
-		echo "$0: Multiple restore info found for file '$1'"
+		echo "$0: Can't find restore info for file '$1', may indicate a corrupted restore info file"
 		exit 5
 	fi
 
-	if [ "$(echo -n "$record" | cut -d':' -f1 2>/dev/null)" != "$1" ]; then
-		echo "$0: Corrupt info for file '$1'"
-		exit 3
+	if [ "$numberOfRecords" -ge 2 ]; then
+		echo "$0: Multiple restore info found for file '$1', may indicate a corrupted restore info file"
+		exit 5
 	fi
 }
 
@@ -62,8 +57,17 @@ getRecord() {
 	grep -Ee "^$(escapeForRegex "$1"):" "$restoreFile" 2>/dev/null
 }
 
-getRecordsFromAbsPath() {
-	grep -Ee ":$(escapeForRegex "$1")" "$restoreFile"
+# find all records from .restore.info that is within the given absolute path,
+# and then fill the result to the global variable 'records'
+# arg1 - absolute path
+# echo - error message if no records found
+# exit - 3 if no records found
+updateRecordsFromAbsPath() {
+	records="$(grep -Ee ":$(escapeForRegex "$1")" "$restoreFile")"
+	if [ -z "$records" ]; then
+		echo "$0: Can't find any recycle record associated with path '$1'"
+		exit 3
+	fi
 }
 
 # remove record for a file with the recycled file name ({originalFileName}_{inodeNumber})
@@ -109,10 +113,7 @@ askForOverwrite() {
 
 restoreFile() {
 	validateFile "$1"
-
-	if ! hasRecord "$1"; then
-		exit $?
-	fi
+	validateHasRecord "$1"
 
 	absPath="$(getRecord "$1" | cut -d':' -f2)"
 	if [ ! -e "$absPath" ] || askForOverwrite "$absPath"; then
@@ -133,7 +134,8 @@ validateArgs "$@"
 if $recursive; then
 	IFS=$'\n'
 	absPath="$(recreateAbsPath "$1")"
-	for record in $(getRecordsFromAbsPath "$absPath"); do
+	updateRecordsFromAbsPath "$absPath"
+	for record in $records; do
 		restoreFile "$(echo "$record" | cut -d':' -f1)"
 	done
 	unset IFS
