@@ -7,4 +7,8 @@ zip:
 zipwithtests:
 	zip recyclebinWithTests.zip -r recycle restore tests -x tests/tmpTest
 
-.PHONY: test zip zipwithtests
+clean:
+	rm -f recyclebin.zip
+	rm -f recyclebinWithTests.zip
+
+.PHONY: test zip zipwithtests clean
