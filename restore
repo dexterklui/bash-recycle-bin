@@ -139,8 +139,7 @@ recreateAbsPath() {
 # Prompt the user for confiramtion to overwrite a given path, and return 0 if user confirms
 # arg1 - path to be prompted for overwrite
 # exit - 0 if user confirm overwriting with a response starting with 'y'/'Y'; 1 otherwise
-askForOverwrite() {
-	# TODO: rename to uesrConfirmOverwrite
+userConfirmOverwrite() {
 	read -rp "Do you want to overwrite the existing file '$1'? (y/n): " answer
 	if echo -n "$answer" | grep -qive '^y'; then
 		exit 1
@@ -161,7 +160,7 @@ restoreFile() {
 	validateHasRecord "$1"
 
 	absPath="$(getRecord "$1" | cut -d':' -f2)"
-	if [ ! -e "$absPath" ] || askForOverwrite "$absPath"; then
+	if [ ! -e "$absPath" ] || userConfirmOverwrite "$absPath"; then
 		mkdir -p "$(dirname "$absPath")"
 		mv "$recycleBin/$1" "$absPath"
 		removeRecord "$1"
