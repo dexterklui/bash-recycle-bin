@@ -1,5 +1,30 @@
 #!/bin/bash
 
+##################################################
+#
+# A script to recycle files to the recycle bin.
+#
+# Usage:
+#     recycle {path}...
+#     recycle [opt]... {path}...
+#
+# Options:
+#     -i: interactive mode: prompt user before recycling a file
+#     -v: verbose mode: display a message after recycling a file
+#     -r: recycle files recursively for a given path, directories are removed
+#         after all files within are removed
+#
+# A recycled file will be stored in the 'recyclebin' in the user's home
+# directory. And restore information will be stored in the file '.restore.info'
+# in the user's home directory.
+#
+# The script uses ':' as the field separator in the restore file, so the script
+# can't recycle files whose absolute path contains ':'. The script also refuse
+# to recycle a file if there is already a recycled file with the same base
+# filename and inode number (e.g. hardlink with the same filename).
+#
+##################################################
+
 # the path of the restore file storing records of recycled files
 restoreFile="$HOME/.restore.info"
 
