@@ -177,9 +177,7 @@ rmDirInInteractiveMode() {
 			$verbose && echo "Removed empty directory '$1'"
 			return 0
 		else
-			# FIX: this doesn't check for recursive mode, so remove that line
-			# FIX: should always echo even not in verbose mode
-			$verbose && echo "$0: in recursive mode trying to remove directory '$1', but it is not empty, so skipping"
+			echo "$0: trying to remove directory '$1', but it is not empty, so skipping"
 			return 2
 		fi
 	fi
