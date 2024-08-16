@@ -30,6 +30,16 @@ attemptedToRecycleSelf=false
 # flag for encountered file with a duplicated record
 encounteredDuplicate=false
 
+# flag for encountered file in recycle bin
+encournteredRecycledFile=false
+
+# escape all meta characters of extended regex in a string
+# arg1 - string to escape
+# output - escaped string
+escapeForRegex() {
+	echo -n "$1" | sed -E 's/([][()^$+|.*\{}])/\\\1/g'
+}
+
 # create an empty restore file if not exist
 createRestoreFileIfNotExist() {
 	if [ ! -e "$restoreFile" ]; then
@@ -42,7 +52,7 @@ createRestoreFileIfNotExist() {
 # -v - verbose mode: display a message after recycling a file
 # -r - recycle files recursively for a given path
 # output - error message if invalid option is provided
-# exit - 16 if invalid option is provided
+# exit - 32 if invalid option is provided
 parseOpts() {
 	while getopts ":ivr" opt; do
 		case "$opt" in
@@ -57,7 +67,7 @@ parseOpts() {
 			;;
 		\?)
 			echo "$0: invalid option: -- $OPTARG"
-			exit 16
+			exit 32
 			;;
 		esac
 	done
@@ -65,11 +75,11 @@ parseOpts() {
 
 # validate if the number of arguments is valid (at least 1)
 # output - error message if number of arguments is invalid
-# exit - 17 if number of arguments is invalid
+# exit - 33 if number of arguments is invalid
 validateArgs() {
 	if [ "$#" -le 0 ]; then
 		echo "$0: no filename is provided"
-		exit 17
+		exit 33
 	fi
 }
 
@@ -81,8 +91,8 @@ validateArgs() {
 #        2 if in non-recursive mode and file is a directory
 #        4 if file is the script itself
 #        8 if the absolute path contains the field separator of restore file
+#        16 if the file is already in the recycle bin
 validateFile() {
-	# TODO: check if recycling a file already in a recycle bin
 	if [ ! -e "$1" ]; then
 		echo "$0: file '$1' does not exist"
 		encounteredNonExistingFile=true
@@ -105,6 +115,12 @@ validateFile() {
 		attemptedToRecycleSelf=true
 		return 4
 	fi
+
+	if realpath "$1" | grep -qEe "^$(escapeForRegex "$(realpath "$recycleBin")")"; then
+		echo "$0: cannot recycle file '$1' because it is in the recycle bin"
+		encournteredRecycledFile=true
+		return 16
+	fi
 }
 
 # get the would-be recycled file name of a given file
@@ -116,13 +132,6 @@ getRecycleFileName() {
 	basefilename="$(basename "$1")"
 	echo "${basefilename}_${inodeNumber}"
 	unset inodeNumber
-}
-
-# escape all meta characters of extended regex in a string
-# arg1 - string to escape
-# output - escaped string
-escapeForRegex() {
-	echo -n "$1" | sed -E 's/([][()^$+|.*\{}])/\\\1/g'
 }
 
 # check if a record (for a recycled filename and absolute path)
@@ -235,12 +244,12 @@ recycleFile() {
 
 # calculate the exit code based on the flags
 # output - the exit code whose bits represent the following:
-#          1st bit (1): if encountered non existing file
-#          2nd bit (2): if encountered directory in non-recursive mode
-#          3rd bit (4): if attempted to recycle itself
-#          4th bit (8): if encountered file with a duplicated record
+#          1st bit (1):  if encountered non existing file
+#          2nd bit (2):  if encountered directory in non-recursive mode
+#          3rd bit (4):  if attempted to recycle itself
+#          4th bit (8):  if encountered file with a duplicated record
+#          5th bit (16): if encountered file in recycle bin
 calculateExitCode() {
-	# TODO: more bits for more flags
 	local exitCode
 	exitCode=0
 	if $encounteredNonExistingFile; then
@@ -254,6 +263,9 @@ calculateExitCode() {
 	fi
 	if $encounteredDuplicate; then
 		(("exitCode+=8"))
+	fi
+	if $encournteredRecycledFile; then
+		(("exitCode+=16"))
 	fi
 	echo $exitCode
 }

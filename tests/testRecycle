@@ -161,3 +161,11 @@ verifyFileNotExist "$fileName"
 verifyFileExist "$recycleBin/$recycleFileName"
 checkRestoreInfo "$recycleFileName" "$(realpath "$fileName")"
 clearAll
+
+testName='should not recycle file in recycle bin'
+touch "$recycleBin/testfile"
+cmd="bash '$projectRoot/recycle' '$recycleBin/testfile'"
+expectedOutput="$projectRoot/recycle: cannot recycle file '$recycleBin/testfile' because it is in the recycle bin"
+testExe "$testName" "$cmd" "$expectedOutput"
+verifyFileExist "$recycleBin/testfile"
+clearAll
