@@ -2,6 +2,9 @@ test:
 	tests/test
 
 zip:
-	zip recyclebin.zip -r recycle restore tests -x tests/tmpTest
+	zip recyclebin.zip recycle restore
 
-.PHONY: test zip
+zipwithtests:
+	zip recyclebinWithTests.zip -r recycle restore tests -x tests/tmpTest
+
+.PHONY: test zip zipwithtests
