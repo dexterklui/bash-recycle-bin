@@ -5,7 +5,7 @@ zip:
 	zip recyclebin.zip recycle restore
 
 zipwithtests:
-	zip recyclebinWithTests.zip -r recycle restore tests -x tests/tmpTest
+	zip recyclebinWithTests.zip -r recycle restore makefile tests -x tests/tmpTest
 
 clean:
 	rm -f recyclebin.zip
