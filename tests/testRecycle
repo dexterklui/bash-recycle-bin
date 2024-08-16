@@ -4,11 +4,6 @@
 # Set up #
 ##########
 
-cd "$(dirname "$0")" || exit 1
-. ./testUtils
-. ./exportEnv
-clearAll
-
 printf "\033[1;35mStarting Test Suite:\033[0m %s\n" "$0"
 
 echo "WARNING: running tests will remove all files in the recycle bin and remove all records in .restore.info"
@@ -17,6 +12,11 @@ read -r answer
 if [ "$answer" != "y" ]; then
 	exit 1
 fi
+
+cd "$(dirname "$0")" || exit 1
+. ./testUtils
+. ./exportEnv
+clearAll
 
 ##############
 # Test cases #
