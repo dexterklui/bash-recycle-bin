@@ -68,7 +68,7 @@ getRecordsFromAbsPath() {
 
 # remove record for a file with the recycled file name ({originalFileName}_{inodeNumber})
 removeRecord() {
-	sed -i -e "/^$(escapeForRegex "$1"):/d" "$restoreFile"
+	sed -i -E -e "/^$(escapeForRegex "$1"):/d" "$restoreFile"
 }
 
 # if there is no possible valid absolute path, then result is not well defined

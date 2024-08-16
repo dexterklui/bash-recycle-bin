@@ -146,3 +146,15 @@ testExe "$testName" "$cmd" "$expectedOutput"
 verifyFileExist 'f:'
 rm 'f:'
 clearAll
+
+testName='can recycle weird file name'
+fileName='f+ gogogo!'
+touch "$fileName"
+inodeNumber="$(getInodeNumber "$fileName")"
+recycleFileName="${fileName}_${inodeNumber}"
+cmd="bash ./recycle \"$fileName\""
+testExe "$testName" "$cmd" ""
+verifyFileNotExist "$fileName"
+verifyFileExist "$recycleBin/$recycleFileName"
+checkRestoreInfo "$recycleFileName" "$(realpath "$fileName")"
+clearAll

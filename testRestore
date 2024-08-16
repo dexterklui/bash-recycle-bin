@@ -109,3 +109,19 @@ verifyFileNotExist "$fileName"
 verifyFileExist "$recycleBin/$recycleFileName"
 checkRestoreInfo "$recycleFileName" "$absPath"
 clearAll
+
+testName='can restore weird file name using recursive mode'
+fileName='f+ gogogo!'
+touch "$fileName"
+inodeNumber="$(getInodeNumber "$fileName")"
+recycleFileName="${fileName}_${inodeNumber}"
+absPath="$(realpath "$fileName")"
+mv "$fileName" "$recycleBin/$recycleFileName"
+echo "$recycleFileName:$absPath" >"$restoreFile"
+cmd="bash ./restore -r \"$fileName\""
+testExe "$testName" "$cmd" ""
+verifyFileExist "$fileName"
+verifyFileNotExist "$recycleBin/$recycleFileName"
+checkRestoreInfoNotExist "$recycleFileName" "$absPath"
+rm "$fileName"
+clearAll
