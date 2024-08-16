@@ -187,4 +187,5 @@ expectedOutput=""
 testExe "$testName" "$cmd" "$expectedOutput"
 verifyFileNotExist 'testing directory/nested'
 verifyFileNotExist 'testing directory/nested2'
+rmdir 'testing directory'
 clearAll
