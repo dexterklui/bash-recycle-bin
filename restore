@@ -1,5 +1,29 @@
 #!/bin/bash
 
+##################################################
+#
+# A script to restore recycled files from the recycle bin.
+#
+# Usage:
+#     restore {recycled-file-name}
+#     restore -r {destination-path}
+#
+# Options:
+#     -r: restore recursively all recycled files that were originally at or
+#         under a destination path
+#
+# Recycled files are stored in the 'recyclebin' in the user's home directory.
+# And restore information will be stored in the file '.restore.info' in the
+# user's home directory.
+#
+# If a file to be restored is already present in the destination path, the user
+# will be prompted for confirmation to overwrite the existing file.
+#
+# The script will create non-existing directories if needed to restore a file to
+# its original position.
+#
+##################################################
+
 # the path the the file storing records of recycled files
 restoreFile="$HOME/.restore.info"
 
@@ -10,7 +34,8 @@ recycleBin="$HOME/recyclebin"
 recursive=false
 
 # parse options for the script
-# -r - restore files recursively for a given path
+#   -r - restore recursively all recycled files at or under a given destination
+#        path
 # output - error message if invalid option is provided
 # exit - 8 if invalid option is provided
 parseOpts() {
