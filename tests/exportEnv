@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export projectRoot=".."
 export restoreFile="$HOME/.restore.info"
 export restoreInfoSep=':'
 export recycleBin="$HOME/recyclebin"

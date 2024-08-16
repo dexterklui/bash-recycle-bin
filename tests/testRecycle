@@ -4,30 +4,33 @@
 # Set up #
 ##########
 
+cd "$(dirname "$0")" || exit 1
 . ./testUtils
 . ./exportEnv
 clearAll
+
+printf "\033[1;35mStarting Test Suite:\033[0m %s\n" "$0"
 
 ##############
 # Test cases #
 ##############
 
-testExe 'no argument' 'bash ./recycle' \
-	'./recycle: no filename is provided'
-testExe 'provided single non-existing file' 'bash ./recycle non-existing-file' \
-	"./recycle: file 'non-existing-file' does not exist"
+testExe 'no argument' "bash '$projectRoot/recycle'" \
+	"$projectRoot/recycle: no filename is provided"
+testExe 'provided single non-existing file' "bash '$projectRoot/recycle' non-existing-file" \
+	"$projectRoot/recycle: file 'non-existing-file' does not exist"
 
 mkdir -p "$tmpDir"
-testExe 'provided single directory' "bash ./recycle \"$tmpDir\"" \
-	"./recycle: '$tmpDir' is a directory, but expect a file"
+testExe 'provided single directory' "bash '$projectRoot/recycle' \"$tmpDir\"" \
+	"$projectRoot/recycle: '$tmpDir' is a directory, but expect a file"
 rmdir "$tmpDir"
 
-testExe 'recycle the recycle script itself' 'bash ./recycle ./recycle' \
-	"./recycle: cannot recycle itself"
+testExe 'recycle the recycle script itself' "bash '$projectRoot/recycle' '$projectRoot/recycle'" \
+	"$projectRoot/recycle: cannot recycle itself"
 
 touch "$tmpFile"
 inodeNumber="$(getInodeNumber "$tmpFile")"
-testExe 'recycle single file does put into recyle bin' "bash ./recycle \"$tmpFile\"" ''
+testExe 'recycle single file does put into recyle bin' "bash '$projectRoot/recycle' \"$tmpFile\"" ''
 verifyFileExist "$recycleBin/${tmpFile}_$inodeNumber"
 clearAll
 
@@ -35,7 +38,7 @@ mkdir -p "$tmpDir"
 targetFile="$tmpDir/$tmpFile"
 touch "$targetFile"
 inodeNumber="$(getInodeNumber "$targetFile")"
-testExe 'recycle single file in a directory does put into recyle bin' "bash ./recycle \"$targetFile\"" ''
+testExe 'recycle single file in a directory does put into recyle bin' "bash '$projectRoot/recycle' \"$targetFile\"" ''
 verifyFileExist "$recycleBin/${tmpFile}_$inodeNumber"
 rmdir "$tmpDir"
 clearAll
@@ -43,7 +46,7 @@ clearAll
 touch "$tmpFile"
 absPath="$(realpath "$tmpFile")"
 inodeNumber="$(getInodeNumber "$tmpFile")"
-testExe 'recycling file updates .restore.info' "bash ./recycle \"$tmpFile\"" ''
+testExe 'recycling file updates .restore.info' "bash '$projectRoot/recycle' \"$tmpFile\"" ''
 checkRestoreInfo "${tmpFile}_$inodeNumber" "$absPath"
 clearAll
 
@@ -56,7 +59,7 @@ path1="$(realpath "$file1")"
 path2="$(realpath "$file2")"
 inode1="$(getInodeNumber "$file1")"
 inode2="$(getInodeNumber "$file2")"
-testExe "$testName" "bash ./recycle \"$file1\"; bash ./recycle \"$file2\"" ''
+testExe "$testName" "bash '$projectRoot/recycle' \"$file1\"; bash '$projectRoot/recycle' \"$file2\"" ''
 checkRestoreInfo "${tmpFile}_$inode1" "$path1"
 checkRestoreInfo "${tmpFile}_$inode2" "$path2"
 verifyFileExist "$recycleBin/${tmpFile}_$inode1"
@@ -70,7 +73,7 @@ touch "$fileName"
 inodeNumber="$(getInodeNumber "$fileName")"
 absPath="$(realpath "$fileName")"
 recycleFileName="${fileName}_${inodeNumber}"
-testExe "$testName" "bash ./recycle -x \"$fileName\"" './recycle: invalid option: -- x'
+testExe "$testName" "bash '$projectRoot/recycle' -x \"$fileName\"" "$projectRoot/recycle: invalid option: -- x"
 verifyFileExist "$fileName"
 verifyFileNotExist "$recycleBin/$recycleFileName"
 checkRestoreInfoNotExist "$recycleFileName" "$absPath"
@@ -88,7 +91,7 @@ recycleFileName1="${fileName1}_${inodeNumber1}"
 recycleFileName2="${fileName2}_${inodeNumber2}"
 echo "y" >"$tmpInput"
 echo "n" >>"$tmpInput"
-cmd="bash ./recycle -i \"$fileName1\" \"$fileName2\" <\"$tmpInput\""
+cmd="bash '$projectRoot/recycle' -i \"$fileName1\" \"$fileName2\" <\"$tmpInput\""
 testExe "$testName" "$cmd" ''
 verifyFileExist "$recycleBin/$recycleFileName1"
 verifyFileExist "$fileName2"
@@ -102,7 +105,7 @@ clearAll
 testName='display message in verbose mode'
 fileName="testFile"
 touch "$fileName"
-cmd="bash ./recycle -v \"$fileName\""
+cmd="bash '$projectRoot/recycle' -v \"$fileName\""
 testExe "$testName" "$cmd" "Recycled '$fileName'"
 clearAll
 
@@ -113,7 +116,7 @@ inodeNumber="$(getInodeNumber "$fileName")"
 absPath="$(realpath "$fileName")"
 recycleFileName="${fileName}_${inodeNumber}"
 echo "y" >"$tmpInput"
-cmd="bash ./recycle -vi \"$fileName\" <\"$tmpInput\""
+cmd="bash '$projectRoot/recycle' -vi \"$fileName\" <\"$tmpInput\""
 testExe "$testName" "$cmd" "Recycled '$fileName'"
 verifyFileExist "$recycleBin/$recycleFileName"
 verifyFileNotExist "$fileName"
@@ -129,7 +132,7 @@ realPath="$(realpath tmpDir/nestDir2/f1)"
 dirInodeNumber="$(getInodeNumber tmpDir)"
 dirRecycleFileName="tmpDir_$dirInodeNumber"
 dirRealPath="$(realpath tmpDir)"
-cmd="bash ./recycle -r tmpDir"
+cmd="bash '$projectRoot/recycle' -r tmpDir"
 testExe "$testName" "$cmd" ''
 verifyFileNotExist tmpDir
 verifyFileExist "$recycleBin/$recycleFileName"
@@ -140,8 +143,8 @@ clearAll
 
 testName='should not recycle file whose absolute path contains separator'
 touch 'f:'
-cmd="bash ./recycle 'f:'"
-expectedOutput="./recycle: can't recycle file 'f:' because its absolute path contains separator '$restoreInfoSep'"
+cmd="bash '$projectRoot/recycle' 'f:'"
+expectedOutput="$projectRoot/recycle: can't recycle file 'f:' because its absolute path contains separator '$restoreInfoSep'"
 testExe "$testName" "$cmd" "$expectedOutput"
 verifyFileExist 'f:'
 rm 'f:'
@@ -152,7 +155,7 @@ fileName='f+ gogogo!'
 touch "$fileName"
 inodeNumber="$(getInodeNumber "$fileName")"
 recycleFileName="${fileName}_${inodeNumber}"
-cmd="bash ./recycle \"$fileName\""
+cmd="bash '$projectRoot/recycle' \"$fileName\""
 testExe "$testName" "$cmd" ""
 verifyFileNotExist "$fileName"
 verifyFileExist "$recycleBin/$recycleFileName"

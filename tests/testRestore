@@ -4,22 +4,25 @@
 # Set up #
 ##########
 
+cd "$(dirname "$0")" || exit 1
 . ./testUtils
 . ./exportEnv
 clearAll
+
+printf "\033[1;35mStarting Test Suite:\033[0m %s\n" "$0"
 
 ##############
 # Test cases #
 ##############
 
 testName="No argument"
-cmd="bash ./restore"
-expectedOutput="./restore: no filename is provided"
+cmd="bash '$projectRoot/restore'"
+expectedOutput="$projectRoot/restore: no filename is provided"
 testExe "$testName" "$cmd" "$expectedOutput"
 
 testName="Restore a non-existing file"
-cmd="bash ./restore non-existing-file_123"
-expectedOutput="./restore: file 'non-existing-file_123' does not exist in '$recycleBin'"
+cmd="bash '$projectRoot/restore' non-existing-file_123"
+expectedOutput="$projectRoot/restore: file 'non-existing-file_123' does not exist in '$recycleBin'"
 testExe "$testName" "$cmd" "$expectedOutput"
 
 testName="Restore a single file"
@@ -31,7 +34,7 @@ recycleFileName="${fileName}_${inodeNumber}"
 echo "$recycleFileName:$absPath" >"$restoreFile"
 echo "random-file_72189214:/tmp/non-existing-dir/random-file" >>"$restoreFile" # add a random record
 mv "$fileName" "$recycleBin/$recycleFileName"
-cmd="bash ./restore $recycleFileName"
+cmd="bash '$projectRoot/restore' $recycleFileName"
 testExe "$testName" "$cmd" ''
 verifyFileExist "$fileName"
 verifyFileNotExist "$recycleBin/$recycleFileName"
@@ -50,7 +53,7 @@ echo "$recycleFileName:$absPath" >"$restoreFile"
 mv "$fileName" "$recycleBin/$recycleFileName"
 touch "$fileName" # create a existing file to be overwritten by the restore
 echo "y" >"$tmpInput"
-cmd="bash ./restore \"$recycleFileName\" <\"$tmpInput\""
+cmd="bash '$projectRoot/restore' \"$recycleFileName\" <\"$tmpInput\""
 testExe "$testName" "$cmd" ''
 verifyFileExist "$fileName"
 verifyFileNotExist "$recycleBin/$recycleFileName"
@@ -68,7 +71,7 @@ echo "$recycleFileName:$absPath" >"$restoreFile"
 mv "$fileName" "$recycleBin/$recycleFileName"
 touch "$fileName" # create a existing file to prompt for whether to overwrite
 echo "n" >"$tmpInput"
-cmd="bash ./restore \"$recycleFileName\" <\"$tmpInput\""
+cmd="bash '$projectRoot/restore' \"$recycleFileName\" <\"$tmpInput\""
 testExe "$testName" "$cmd" ''
 verifyFileExist "$fileName"
 verifyFileExist "$recycleBin/$recycleFileName"
@@ -87,7 +90,7 @@ recycleFileName="${fileName}_${inodeNumber}"
 echo "$recycleFileName:$absPath" >"$restoreFile"
 mv "$dirName/$fileName" "$recycleBin/$recycleFileName"
 rmdir "$dirName"
-cmd="bash ./restore $recycleFileName"
+cmd="bash '$projectRoot/restore' $recycleFileName"
 testExe "$testName" "$cmd" ''
 verifyFileExist "$dirName/$fileName"
 verifyFileNotExist "$recycleBin/$recycleFileName"
@@ -103,8 +106,8 @@ absPath="$(realpath "$fileName")"
 recycleFileName="${fileName}_${inodeNumber}"
 echo "$recycleFileName:$absPath" >"$restoreFile"
 mv "$fileName" "$recycleBin/$recycleFileName"
-cmd="bash ./restore -x $recycleFileName"
-testExe "$testName" "$cmd" './restore: invalid option: -- x'
+cmd="bash '$projectRoot/restore' -x $recycleFileName"
+testExe "$testName" "$cmd" "$projectRoot/restore: invalid option: -- x"
 verifyFileNotExist "$fileName"
 verifyFileExist "$recycleBin/$recycleFileName"
 checkRestoreInfo "$recycleFileName" "$absPath"
@@ -118,7 +121,7 @@ recycleFileName="${fileName}_${inodeNumber}"
 absPath="$(realpath "$fileName")"
 mv "$fileName" "$recycleBin/$recycleFileName"
 echo "$recycleFileName:$absPath" >"$restoreFile"
-cmd="bash ./restore -r \"$fileName\""
+cmd="bash '$projectRoot/restore' -r \"$fileName\""
 testExe "$testName" "$cmd" ""
 verifyFileExist "$fileName"
 verifyFileNotExist "$recycleBin/$recycleFileName"
