@@ -73,6 +73,8 @@ createRestoreFileIfNotExist() {
 	fi
 }
 
+# print the help message of the script
+# output - the help message of the script
 printHelp() {
 	local beginLineNum
 	local endLineNum
@@ -126,12 +128,12 @@ validateArgs() {
 # validate if a file can be recycled
 # arg1 - the path of the file
 # output - error message if file cannot be recycled
-# exit - 0 if the file can be recycled
-#        1 if file does not exist
-#        2 if in non-recursive mode and file is a directory
-#        4 if file is the script itself
-#        8 if the absolute path contains the field separator of restore file
-#        16 if the file is already in the recycle bin
+# return - 0 if the file can be recycled
+#          1 if file does not exist
+#          2 if in non-recursive mode and file is a directory
+#          4 if file is the script itself
+#          8 if the absolute path contains the field separator of restore file
+#          16 if the file is already in the recycle bin
 validateFile() {
 	if [ ! -e "$1" ]; then
 		echo "$0: file '$1' does not exist"
@@ -169,6 +171,7 @@ validateFile() {
 getRecycleFileName() {
 	local inodeNumber
 	local basefilename
+	# TODO: use stat instead
 	inodeNumber="$(ls -i "$1" | cut -d' ' -f1)"
 	basefilename="$(basename "$1")"
 	echo "${basefilename}_${inodeNumber}"

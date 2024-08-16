@@ -34,6 +34,8 @@ recycleBin="$HOME/recyclebin"
 # flag for recursive mode
 recursive=false
 
+# print the help message of the script
+# output - the help message of the script
 printHelp() {
 	local beginLineNum
 	local endLineNum
