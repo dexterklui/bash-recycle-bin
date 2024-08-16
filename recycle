@@ -201,8 +201,7 @@ recycleFile() {
 	fi
 
 	if ! confirmRecycleIfInteractive "$1"; then
-		# FIX: return 0 because this is not an error
-		return 2
+		return 0
 	fi
 
 	if rmDirInInteractiveMode "$1"; then
