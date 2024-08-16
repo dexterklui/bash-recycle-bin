@@ -277,7 +277,7 @@ recycleFile() {
 		return 2
 	fi
 
-	mv "$1" "$recycleBin/$recycleFileName"
+	ln "$1" "$recycleBin/$recycleFileName" && rm "$1"
 	displayMessageIfVerbose "$1"
 	writeRecord "$recycleFileName" "$absPath"
 }
